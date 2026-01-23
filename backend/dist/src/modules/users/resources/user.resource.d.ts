@@ -17,6 +17,12 @@ export declare class UserResource {
         code: string;
         description?: string;
     }[];
+    role: {
+        uuid: string;
+        name: string;
+        code: string;
+        description?: string;
+    } | null;
     constructor(user: any);
     static collection(users: any[]): UserResource[];
     toJSON(): {
@@ -38,5 +44,11 @@ export declare class UserResource {
             code: string;
             description?: string;
         }[];
+        role: {
+            uuid: string;
+            name: string;
+            code: string;
+            description?: string;
+        };
     };
 }

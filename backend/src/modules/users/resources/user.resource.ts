@@ -17,6 +17,12 @@ export class UserResource {
     code: string;
     description?: string;
   }[];
+  role: {
+    uuid: string;
+    name: string;
+    code: string;
+    description?: string;
+  } | null;
 
   constructor(user: any) {
     this.uuid = user.uuid;
@@ -39,6 +45,7 @@ export class UserResource {
       code: userRole.role.code,
       description: userRole.role.description,
     })) || [];
+    this.role = this.roles[0] || null;
   }
 
   static collection(users: any[]): UserResource[] {
@@ -60,6 +67,7 @@ export class UserResource {
       createdBy: this.createdBy,
       updatedBy: this.updatedBy,
       roles: this.roles,
+      role: this.roles[0] || null,
     };
   }
 }

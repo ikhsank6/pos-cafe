@@ -347,6 +347,19 @@ export function DataTable<T>({
         </div>
         
         <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+          {/* Refresh Action */}
+          {onRefresh && (
+            <ActionButton
+              variant="outline"
+              size="icon"
+              className="h-9 w-9 bg-background/50 hover:bg-background shadow-none"
+              onClick={onRefresh}
+              loading={loading}
+              icon={<RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />}
+              tooltip="Refresh Data"
+            />
+          )}
+
           {/* View Toggle */}
           {showViewToggle && (
             <div className="flex items-center rounded-md border p-1 bg-muted/30">
@@ -527,13 +540,12 @@ export function DataTable<T>({
                       {isError && onRefresh && (
                         <ActionButton 
                           variant="outline" 
-                          size="sm" 
+                          size="icon" 
                           onClick={onRefresh}
-                          className="h-8 bg-background shadow-xs hover:bg-muted"
-                          icon={<RefreshCw className="h-3.5 w-3.5" />}
-                        >
-                          Reload Data
-                        </ActionButton>
+                          className="h-8 w-8 bg-background shadow-xs hover:bg-muted"
+                          icon={<RefreshCw className="h-4 w-4" />}
+                          tooltip="Reload Data"
+                        />
                       )}
                     </div>
                   </TableCell>
@@ -614,12 +626,12 @@ export function DataTable<T>({
               {isError && onRefresh && (
                 <ActionButton 
                   variant="outline" 
-                  size="sm" 
+                  size="icon" 
                   onClick={onRefresh}
-                  icon={<RefreshCw className="h-3.5 w-3.5" />}
-                >
-                  Reload Data
-                </ActionButton>
+                  className="h-8 w-8 bg-background shadow-xs hover:bg-muted"
+                  icon={<RefreshCw className="h-4 w-4" />}
+                  tooltip="Reload Data"
+                />
               )}
             </div>
           ) : onReorder ? (
