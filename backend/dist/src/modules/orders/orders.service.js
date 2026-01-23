@@ -106,10 +106,7 @@ let OrdersService = class OrdersService {
                 orderType = client_1.OrderType.DELIVERY;
             }
             let tableId = null;
-            if (orderType === client_1.OrderType.DINE_IN) {
-                if (!createOrderDto.tableUuid) {
-                    throw new common_1.BadRequestException('Meja harus dipilih untuk order DINE_IN.');
-                }
+            if (createOrderDto.tableUuid) {
                 const table = await prisma.table.findFirst({
                     where: { uuid: createOrderDto.tableUuid, deletedAt: null },
                 });

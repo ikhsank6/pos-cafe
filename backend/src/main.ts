@@ -32,7 +32,7 @@ async function bootstrap() {
 
   // Global prefix (exclude static asset paths and root health check)
   app.setGlobalPrefix('api', {
-    exclude: ['/', '/uploads/(.*)', '/public/(.*)'],
+    exclude: ['/', 'uploads/*path', 'public/*path'],
   });
 
   // Serve static files (AFTER global prefix to avoid conflicts)

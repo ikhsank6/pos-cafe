@@ -4,4 +4,8 @@ node_modules
 
 /logs/*
 
+/dist/*
+
+/uploads/*
+
 /generated/prisma

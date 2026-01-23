@@ -12,6 +12,7 @@ import { EmailModule } from './modules/email/email.module';
 import { QueueModule } from './modules/queue/queue.module';
 import { UploadModule } from './upload/upload.module';
 import { MediaModule } from './media/media.module';
+import { ProfileModule } from './modules/profile/profile.module';
 
 // Cafe POS Modules
 import { CategoriesModule } from './modules/categories/categories.module';
@@ -41,6 +42,7 @@ import { AppController } from './app.controller';
     MenuAccessModule,
     UploadModule,
     MediaModule,
+    ProfileModule,
     // Cafe POS Modules
     CategoriesModule,
     ProductsModule,

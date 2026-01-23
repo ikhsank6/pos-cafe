@@ -6,7 +6,7 @@ import { cookieUtils } from '@/lib/cookies';
 export interface AuthUser {
   uuid: string;
   email: string;
-  name: string;
+  fullName: string;
   avatar: string | null;
   isActive: boolean;
   createdAt: string;

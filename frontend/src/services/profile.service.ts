@@ -38,9 +38,8 @@ export const profileService = {
     return response?.data;
   },
 
-  deleteAvatar: async (uuid?: string): Promise<User> => {
-    const url = uuid ? `/profile/avatar/${uuid}` : '/profile/avatar';
-    const response = await api.delete(url) as any;
+  deleteAvatar: async (uuid: string): Promise<User> => {
+    const response = await api.delete(`/profile/avatar/${uuid}`) as any;
     return response?.data;
   },
 

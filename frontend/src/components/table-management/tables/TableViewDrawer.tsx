@@ -1,13 +1,8 @@
 import { ViewDialog, FieldDisplay } from '@/components/ui/form-dialog';
-import { type Table, type TableStatus } from '@/services/table.service';
+import { type Table, type TableStatus, TABLE_STATUS_OPTIONS } from '@/services/table.service';
 import { Badge } from '@/components/ui/badge';
 
-const statusOptions: { value: TableStatus; label: string; color: string }[] = [
-  { value: 'available', label: 'Tersedia', color: 'bg-green-500' },
-  { value: 'occupied', label: 'Terisi', color: 'bg-red-500' },
-  { value: 'reserved', label: 'Reserved', color: 'bg-yellow-500' },
-  { value: 'maintenance', label: 'Maintenance', color: 'bg-gray-500' },
-];
+
 
 interface TableViewDrawerProps {
   open: boolean;
@@ -20,7 +15,7 @@ export function TableViewDrawer({ open, onOpenChange, table, onEdit }: TableView
   if (!table) return null;
 
   const getStatusBadge = (status: TableStatus) => {
-    const option = statusOptions.find(o => o.value === status);
+    const option = TABLE_STATUS_OPTIONS.find(o => o.value === status);
     return (
       <Badge variant="outline" className="gap-1">
         <span className={`h-2 w-2 rounded-full ${option?.color || 'bg-gray-500'}`} />

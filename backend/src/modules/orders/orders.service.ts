@@ -122,12 +122,9 @@ export class OrdersService {
                 orderType = OrderType.DELIVERY;
             }
 
-            // Validate table if DINE_IN
+            // Validate table if provided
             let tableId: number | null = null;
-            if (orderType === OrderType.DINE_IN) {
-                if (!createOrderDto.tableUuid) {
-                    throw new BadRequestException('Meja harus dipilih untuk order DINE_IN.');
-                }
+            if (createOrderDto.tableUuid) {
                 const table = await prisma.table.findFirst({
                     where: { uuid: createOrderDto.tableUuid, deletedAt: null },
                 });

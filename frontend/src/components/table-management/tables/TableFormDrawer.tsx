@@ -19,20 +19,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { z } from 'zod';
-import { type TableStatus } from '@/services/table.service';
+import { TABLE_STATUS_OPTIONS } from '@/services/table.service';
 
-const statusOptions: { value: TableStatus; label: string }[] = [
-  { value: 'available', label: 'Tersedia' },
-  { value: 'occupied', label: 'Terisi' },
-  { value: 'reserved', label: 'Reserved' },
-  { value: 'maintenance', label: 'Maintenance' },
-];
+
 
 // Schema exported for use in parent component
 export const tableFormSchema = z.object({
   number: z.string().min(1, 'Nomor meja wajib diisi'),
   capacity: z.coerce.number().min(1, 'Kapasitas minimal 1'),
-  status: z.enum(['available', 'occupied', 'reserved', 'maintenance']),
+  status: z.enum(['AVAILABLE', 'OCCUPIED', 'RESERVED', 'MAINTENANCE']),
   location: z.string().optional(),
   isActive: z.boolean().default(true),
 });
@@ -118,7 +113,7 @@ export function TableFormDrawer({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {statusOptions.map((option) => (
+                      {TABLE_STATUS_OPTIONS.map((option) => (
                         <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
                       ))}
                     </SelectContent>

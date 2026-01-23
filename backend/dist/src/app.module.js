@@ -21,6 +21,7 @@ const email_module_1 = require("./modules/email/email.module");
 const queue_module_1 = require("./modules/queue/queue.module");
 const upload_module_1 = require("./upload/upload.module");
 const media_module_1 = require("./media/media.module");
+const profile_module_1 = require("./modules/profile/profile.module");
 const categories_module_1 = require("./modules/categories/categories.module");
 const products_module_1 = require("./modules/products/products.module");
 const tables_module_1 = require("./modules/tables/tables.module");
@@ -50,6 +51,7 @@ exports.AppModule = AppModule = __decorate([
             menu_access_module_1.MenuAccessModule,
             upload_module_1.UploadModule,
             media_module_1.MediaModule,
+            profile_module_1.ProfileModule,
             categories_module_1.CategoriesModule,
             products_module_1.ProductsModule,
             tables_module_1.TablesModule,

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { orderService, type Order, type OrderStatus } from '@/services/order.service';
+import { orderService, type Order, type OrderStatus, type CreateOrderData } from '@/services/order.service';
 import { DataTable, type Column, type TableActions } from '@/components/ui/data-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { OrderFormDialog } from '@/components/order-management/orders/OrderFormDialog';
 
 const statusOptions: { value: OrderStatus; label: string; color: string }[] = [
   { value: 'pending', label: 'Pending', color: 'bg-yellow-500' },
@@ -57,6 +58,8 @@ export default function OrderList() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [orderFormOpen, setOrderFormOpen] = useState(false);
+  const [submittingOrder, setSubmittingOrder] = useState(false);
 
   const handleStatusFilter = (status: string) => {
     if (status === 'all') {
@@ -89,6 +92,20 @@ export default function OrderList() {
       showError(error);
     } finally {
       setUpdatingStatus(false);
+    }
+  };
+
+  const handleCreateOrder = async (data: CreateOrderData) => {
+    setSubmittingOrder(true);
+    try {
+      await orderService.create(data);
+      showSuccess('Order berhasil dibuat');
+      setOrderFormOpen(false);
+      fetchOrders();
+    } catch (error) {
+      showError(error);
+    } finally {
+      setSubmittingOrder(false);
     }
   };
 
@@ -138,7 +155,7 @@ export default function OrderList() {
       key: 'total',
       header: 'Total',
       cell: (order) => (
-        <span className="font-medium">{formatCurrency(order.totalAmount)}</span>
+        <span className="font-medium">{formatCurrency(order.total)}</span>
       ),
     },
     {
@@ -165,7 +182,7 @@ export default function OrderList() {
         title="Orders"
         description="Kelola pesanan pelanggan."
         headerAction={
-          <Button disabled>
+          <Button onClick={() => setOrderFormOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Order Baru
           </Button>
@@ -265,21 +282,21 @@ export default function OrderList() {
                   <span>Subtotal</span>
                   <span>{formatCurrency(selectedOrder.subtotal)}</span>
                 </div>
-                {selectedOrder.discountAmount > 0 && (
+                {selectedOrder.discount > 0 && (
                   <div className="flex justify-between text-sm text-green-600">
                     <span>Diskon</span>
-                    <span>-{formatCurrency(selectedOrder.discountAmount)}</span>
+                    <span>-{formatCurrency(selectedOrder.discount)}</span>
                   </div>
                 )}
-                {selectedOrder.taxAmount > 0 && (
+                {selectedOrder.tax > 0 && (
                   <div className="flex justify-between text-sm">
                     <span>Pajak</span>
-                    <span>{formatCurrency(selectedOrder.taxAmount)}</span>
+                    <span>{formatCurrency(selectedOrder.tax)}</span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold border-t pt-1">
                   <span>Total</span>
-                  <span>{formatCurrency(selectedOrder.totalAmount)}</span>
+                  <span>{formatCurrency(selectedOrder.total)}</span>
                 </div>
               </div>
 
@@ -296,6 +313,13 @@ export default function OrderList() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <OrderFormDialog
+        open={orderFormOpen}
+        onOpenChange={setOrderFormOpen}
+        onSubmit={handleCreateOrder}
+        loading={submittingOrder}
+      />
     </div>
   );
 }

@@ -1,7 +1,14 @@
 import api from '@/config/axios';
 import { createQueryParams } from '@/lib/utils';
 
-export type TableStatus = 'available' | 'occupied' | 'reserved' | 'maintenance';
+export type TableStatus = 'AVAILABLE' | 'OCCUPIED' | 'RESERVED' | 'MAINTENANCE';
+
+export const TABLE_STATUS_OPTIONS: { value: TableStatus; label: string; color: string }[] = [
+  { value: 'AVAILABLE', label: 'Tersedia', color: 'bg-green-500' },
+  { value: 'OCCUPIED', label: 'Terisi', color: 'bg-red-500' },
+  { value: 'RESERVED', label: 'Reserved', color: 'bg-yellow-500' },
+  { value: 'MAINTENANCE', label: 'Maintenance', color: 'bg-gray-500' },
+];
 
 export interface Table {
   uuid: string;

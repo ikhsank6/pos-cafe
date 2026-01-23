@@ -11,9 +11,7 @@ import {
   Command,
   ChevronsUpDown,
   Settings2,
-  Sparkles,
   BadgeCheck,
-  CreditCard,
   Bell,
   Menu,
   FileText,
@@ -239,12 +237,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src={user?.avatar ? avatarBlobUrl : undefined} alt={user?.name} />
-                    <AvatarFallback className="rounded-lg">{user?.name?.charAt(0)}</AvatarFallback>
+                    <AvatarImage src={user?.avatar ? avatarBlobUrl : undefined} alt={user?.fullName} />
+                    <AvatarFallback className="rounded-lg">{user?.fullName?.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">{user?.name}</span>
-                    <span className="truncate text-xs">{user?.email}</span>
+                    <span className="truncate font-semibold">{user?.fullName}</span>
+                    <div className="flex items-center gap-1">
+                      <span className="truncate text-[10px] bg-primary/10 text-primary px-1 rounded font-medium">{user?.role?.name}</span>
+                      <span className="truncate text-[10px] text-muted-foreground">{user?.email}</span>
+                    </div>
                   </div>
                   <ChevronsUpDown className="ml-auto size-4" />
                 </SidebarMenuButton>
@@ -258,37 +259,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarImage src={user?.avatar ? avatarBlobUrl : undefined} alt={user?.name} />
-                      <AvatarFallback className="rounded-lg">{user?.name?.charAt(0)}</AvatarFallback>
+                      <AvatarImage src={user?.avatar ? avatarBlobUrl : undefined} alt={user?.fullName} />
+                      <AvatarFallback className="rounded-lg">{user?.fullName?.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-semibold">{user?.name}</span>
-                      <span className="truncate text-xs">{user?.email}</span>
+                      <span className="truncate font-semibold">{user?.fullName}</span>
+                      <div className="flex items-center gap-1">
+                        <span className="truncate text-[10px] bg-primary/10 text-primary px-1 rounded font-medium">{user?.role?.name}</span>
+                        <span className="truncate text-[10px] text-muted-foreground">{user?.email}</span>
+                      </div>
                     </div>
                   </div>
                 </DropdownMenuLabel>
+
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                  <DropdownMenuItem>
-                    <Sparkles className="mr-2 size-4" />
-                    Upgrade to Pro
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem onSelect={() => navigate('/profile')}>
+                  <DropdownMenuItem onSelect={() => navigate('/admin/profile')}>
                     <BadgeCheck className="mr-2 size-4" />
                     Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Settings2 className="mr-2 size-4" />
-                    Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <CreditCard className="mr-2 size-4" />
-                    Billing
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => navigate('/notifications')}>
+                  <DropdownMenuItem onSelect={() => navigate('/admin/notifications')}>
                     <Bell className="mr-2 size-4" />
                     Notifications
                   </DropdownMenuItem>

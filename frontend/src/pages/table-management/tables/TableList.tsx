@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { tableService, type Table, type TableStatus } from '@/services/table.service';
+import { tableService, type Table, type TableStatus, TABLE_STATUS_OPTIONS } from '@/services/table.service';
 import { DataTable, type Column, type TableActions } from '@/components/ui/data-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,12 +16,7 @@ import {
   type TableFormData 
 } from '@/components/table-management/tables';
 
-const statusOptions: { value: TableStatus; label: string; color: string }[] = [
-  { value: 'available', label: 'Tersedia', color: 'bg-green-500' },
-  { value: 'occupied', label: 'Terisi', color: 'bg-red-500' },
-  { value: 'reserved', label: 'Reserved', color: 'bg-yellow-500' },
-  { value: 'maintenance', label: 'Maintenance', color: 'bg-gray-500' },
-];
+
 
 type DrawerMode = 'create' | 'edit' | 'view' | null;
 
@@ -56,7 +51,7 @@ export default function TableList() {
     defaultValues: {
       number: '',
       capacity: 4,
-      status: 'available',
+      status: 'AVAILABLE',
       location: '',
       isActive: true,
     },
@@ -78,7 +73,7 @@ export default function TableList() {
     form.reset({
       number: '',
       capacity: 4,
-      status: 'available',
+      status: 'AVAILABLE',
       location: '',
       isActive: true,
     });
@@ -151,7 +146,7 @@ export default function TableList() {
   };
 
   const getStatusBadge = (status: TableStatus) => {
-    const option = statusOptions.find(o => o.value === status);
+    const option = TABLE_STATUS_OPTIONS.find(o => o.value === status);
     return (
       <Badge variant="outline" className="gap-1">
         <span className={`h-2 w-2 rounded-full ${option?.color || 'bg-gray-500'}`} />
@@ -225,7 +220,7 @@ export default function TableList() {
           onChange: handleStatusFilter,
           options: [
             { value: 'all', label: 'Semua Status' },
-            ...statusOptions.map(o => ({ value: o.value, label: o.label })),
+            ...TABLE_STATUS_OPTIONS.map(o => ({ value: o.value, label: o.label })),
           ],
         }}
         emptyMessage="Belum ada meja."

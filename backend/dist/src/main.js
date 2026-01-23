@@ -24,7 +24,7 @@ async function bootstrap() {
         optionsSuccessStatus: 200,
     });
     app.setGlobalPrefix('api', {
-        exclude: ['/', '/uploads/(.*)', '/public/(.*)'],
+        exclude: ['/', 'uploads/*path', 'public/*path'],
     });
     app.useStaticAssets((0, path_1.join)(__dirname, '..', 'public'), {
         prefix: '/public/',

@@ -1,12 +1,10 @@
 import api from '@/config/axios';
 import { createQueryParams } from '@/lib/utils';
 import type { Product } from './product.service';
-import type { Table } from './table.service';
-import type { Customer } from './customer.service';
 
 export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'served' | 'completed' | 'cancelled';
 export type OrderItemStatus = 'pending' | 'preparing' | 'ready' | 'served' | 'cancelled';
-export type OrderType = 'dine_in' | 'takeaway' | 'delivery';
+export type OrderType = 'DINE_IN' | 'TAKEAWAY' | 'DELIVERY';
 
 export interface OrderItem {
   uuid: string;
@@ -24,15 +22,26 @@ export interface Order {
   orderNumber: string;
   type: OrderType;
   tableUuid?: string;
-  table?: Table;
+  table?: {
+    uuid: string;
+    number: string;
+  };
   customerUuid?: string;
-  customer?: Customer;
-  discountUuid?: string;
+  customer?: {
+    uuid: string;
+    name: string;
+    phone: string;
+  };
+  discountCode?: {
+    uuid: string;
+    code: string;
+    name: string;
+  };
   items: OrderItem[];
   subtotal: number;
-  discountAmount: number;
-  taxAmount: number;
-  totalAmount: number;
+  discount: number;
+  tax: number;
+  total: number;
   notes?: string;
   status: OrderStatus;
   createdAt: string;
