@@ -45,7 +45,7 @@ let TransactionsController = class TransactionsController {
 exports.TransactionsController = TransactionsController;
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager', 'Cashier'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'CASHIER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get all transactions with pagination' }),
     (0, swagger_1.ApiQuery)({ name: 'status', required: false, enum: transaction_dto_1.TransactionStatus }),
     (0, swagger_1.ApiQuery)({ name: 'paymentMethod', required: false, enum: transaction_dto_1.PaymentMethod }),
@@ -62,7 +62,7 @@ __decorate([
 ], TransactionsController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)('daily-report'),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get daily sales report' }),
     (0, swagger_1.ApiQuery)({ name: 'date', required: false, description: 'Date for report (YYYY-MM-DD), defaults to today' }),
     __param(0, (0, common_1.Query)('date')),
@@ -72,7 +72,7 @@ __decorate([
 ], TransactionsController.prototype, "getDailySalesReport", null);
 __decorate([
     (0, common_1.Get)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager', 'Cashier'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'CASHIER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get transaction by UUID' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Transaction UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),
@@ -83,7 +83,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)(),
     (0, common_1.HttpCode)(200),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager', 'Cashier'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'CASHIER'),
     (0, swagger_1.ApiOperation)({ summary: 'Create payment for order' }),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Request)()),
@@ -94,7 +94,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)(':uuid/refund'),
     (0, common_1.HttpCode)(200),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER'),
     (0, swagger_1.ApiOperation)({ summary: 'Refund transaction' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Transaction UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),

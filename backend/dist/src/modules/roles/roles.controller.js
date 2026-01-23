@@ -45,7 +45,7 @@ let RolesController = class RolesController {
 exports.RolesController = RolesController;
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)('Admin'),
+    (0, roles_decorator_1.Roles)('OWNER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get all roles with pagination' }),
     __param(0, (0, common_1.Query)()),
     __metadata("design:type", Function),
@@ -54,7 +54,7 @@ __decorate([
 ], RolesController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin'),
+    (0, roles_decorator_1.Roles)('OWNER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get role by UUID' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Role UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),
@@ -65,7 +65,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)(),
     (0, common_1.HttpCode)(200),
-    (0, roles_decorator_1.Roles)('Admin'),
+    (0, roles_decorator_1.Roles)('OWNER'),
     (0, swagger_1.ApiOperation)({ summary: 'Create new role' }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -74,7 +74,7 @@ __decorate([
 ], RolesController.prototype, "create", null);
 __decorate([
     (0, common_1.Put)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin'),
+    (0, roles_decorator_1.Roles)('OWNER'),
     (0, swagger_1.ApiOperation)({ summary: 'Update role by UUID' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Role UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),
@@ -85,7 +85,7 @@ __decorate([
 ], RolesController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin'),
+    (0, roles_decorator_1.Roles)('OWNER'),
     (0, swagger_1.ApiOperation)({ summary: 'Delete role by UUID (soft delete)' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Role UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),

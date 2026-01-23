@@ -15,7 +15,7 @@ export class ProductsController {
     constructor(private readonly productsService: ProductsService) { }
 
     @Get()
-    @Roles('Admin', 'Owner', 'Manager', 'Cashier')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER')
     @ApiOperation({ summary: 'Get all products with pagination' })
     @ApiQuery({ name: 'categoryUuid', required: false, description: 'Filter by category UUID' })
     @ApiQuery({ name: 'type', required: false, enum: ProductType, description: 'Filter by product type' })
@@ -38,7 +38,7 @@ export class ProductsController {
     }
 
     @Get(':uuid')
-    @Roles('Admin', 'Owner', 'Manager', 'Cashier')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER')
     @ApiOperation({ summary: 'Get product by UUID' })
     @ApiParam({ name: 'uuid', description: 'Product UUID' })
     async findOne(@Param('uuid', ParseUUIDPipe) uuid: string) {
@@ -47,14 +47,14 @@ export class ProductsController {
 
     @Post()
     @HttpCode(200)
-    @Roles('Admin', 'Owner', 'Manager')
+    @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Create new product' })
     async create(@Body() createProductDto: CreateProductDto, @Request() req) {
         return this.productsService.create(createProductDto, req.user?.uuid);
     }
 
     @Put(':uuid')
-    @Roles('Admin', 'Owner', 'Manager')
+    @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Update product by UUID' })
     @ApiParam({ name: 'uuid', description: 'Product UUID' })
     async update(
@@ -66,7 +66,7 @@ export class ProductsController {
     }
 
     @Delete(':uuid')
-    @Roles('Admin', 'Owner', 'Manager')
+    @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Delete product by UUID (soft delete)' })
     @ApiParam({ name: 'uuid', description: 'Product UUID' })
     async remove(@Param('uuid', ParseUUIDPipe) uuid: string, @Request() req) {
@@ -75,7 +75,7 @@ export class ProductsController {
 
     @Post(':uuid/stock')
     @HttpCode(200)
-    @Roles('Admin', 'Owner', 'Manager')
+    @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Update product stock (add/subtract)' })
     @ApiParam({ name: 'uuid', description: 'Product UUID' })
     async updateStock(

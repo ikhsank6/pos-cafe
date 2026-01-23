@@ -15,7 +15,7 @@ export class CategoriesController {
     constructor(private readonly categoriesService: CategoriesService) { }
 
     @Get()
-    @Roles('Admin', 'Owner', 'Manager')
+    @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Get all categories with pagination' })
     @ApiQuery({ name: 'isActive', required: false, type: Boolean })
     async findAll(
@@ -27,7 +27,7 @@ export class CategoriesController {
     }
 
     @Get(':uuid')
-    @Roles('Admin', 'Owner', 'Manager')
+    @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Get category by UUID' })
     @ApiParam({ name: 'uuid', description: 'Category UUID' })
     async findOne(@Param('uuid', ParseUUIDPipe) uuid: string) {
@@ -36,14 +36,14 @@ export class CategoriesController {
 
     @Post()
     @HttpCode(200)
-    @Roles('Admin', 'Owner', 'Manager')
+    @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Create new category' })
     async create(@Body() createCategoryDto: CreateCategoryDto, @Request() req) {
         return this.categoriesService.create(createCategoryDto, req.user?.uuid);
     }
 
     @Put(':uuid')
-    @Roles('Admin', 'Owner', 'Manager')
+    @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Update category by UUID' })
     @ApiParam({ name: 'uuid', description: 'Category UUID' })
     async update(
@@ -55,7 +55,7 @@ export class CategoriesController {
     }
 
     @Delete(':uuid')
-    @Roles('Admin', 'Owner', 'Manager')
+    @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Delete category by UUID (soft delete)' })
     @ApiParam({ name: 'uuid', description: 'Category UUID' })
     async remove(@Param('uuid', ParseUUIDPipe) uuid: string, @Request() req) {

@@ -16,7 +16,7 @@ export class TablesController {
     constructor(private readonly tablesService: TablesService) { }
 
     @Get()
-    @Roles('Admin', 'Owner', 'Manager', 'Cashier', 'Waiter')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER', 'WAITER')
     @ApiOperation({ summary: 'Get all tables with pagination' })
     @ApiQuery({ name: 'status', required: false, enum: TableStatus })
     @ApiQuery({ name: 'location', required: false, description: 'Filter by location' })
@@ -29,7 +29,7 @@ export class TablesController {
     }
 
     @Get(':uuid')
-    @Roles('Admin', 'Owner', 'Manager', 'Cashier', 'Waiter')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER', 'WAITER')
     @ApiOperation({ summary: 'Get table by UUID' })
     @ApiParam({ name: 'uuid', description: 'Table UUID' })
     async findOne(@Param('uuid', ParseUUIDPipe) uuid: string) {
@@ -38,14 +38,14 @@ export class TablesController {
 
     @Post()
     @HttpCode(200)
-    @Roles('Admin', 'Owner', 'Manager')
+    @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Create new table' })
     async create(@Body() createTableDto: CreateTableDto, @Request() req) {
         return this.tablesService.create(createTableDto, req.user?.uuid);
     }
 
     @Put(':uuid')
-    @Roles('Admin', 'Owner', 'Manager')
+    @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Update table by UUID' })
     @ApiParam({ name: 'uuid', description: 'Table UUID' })
     async update(
@@ -57,7 +57,7 @@ export class TablesController {
     }
 
     @Delete(':uuid')
-    @Roles('Admin', 'Owner', 'Manager')
+    @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Delete table by UUID (soft delete)' })
     @ApiParam({ name: 'uuid', description: 'Table UUID' })
     async remove(@Param('uuid', ParseUUIDPipe) uuid: string, @Request() req) {
@@ -65,7 +65,7 @@ export class TablesController {
     }
 
     @Put(':uuid/status')
-    @Roles('Admin', 'Owner', 'Manager', 'Cashier', 'Waiter')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER', 'WAITER')
     @ApiOperation({ summary: 'Update table status' })
     @ApiParam({ name: 'uuid', description: 'Table UUID' })
     async updateStatus(

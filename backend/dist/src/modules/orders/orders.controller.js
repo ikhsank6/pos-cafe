@@ -51,7 +51,7 @@ let OrdersController = class OrdersController {
 exports.OrdersController = OrdersController;
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager', 'Cashier', 'Waiter'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'CASHIER', 'WAITER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get all orders with pagination' }),
     (0, swagger_1.ApiQuery)({ name: 'status', required: false, enum: order_dto_1.OrderStatus }),
     (0, swagger_1.ApiQuery)({ name: 'orderType', required: false, enum: order_dto_1.OrderType }),
@@ -66,7 +66,7 @@ __decorate([
 ], OrdersController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)('kitchen'),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager', 'Kitchen'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'KITCHEN'),
     (0, swagger_1.ApiOperation)({ summary: 'Get active orders for kitchen display' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
@@ -74,7 +74,7 @@ __decorate([
 ], OrdersController.prototype, "getKitchenOrders", null);
 __decorate([
     (0, common_1.Get)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager', 'Cashier', 'Waiter'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'CASHIER', 'WAITER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get order by UUID' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Order UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),
@@ -85,7 +85,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)(),
     (0, common_1.HttpCode)(200),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager', 'Cashier', 'Waiter'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'CASHIER', 'WAITER'),
     (0, swagger_1.ApiOperation)({ summary: 'Create new order' }),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Request)()),
@@ -95,7 +95,7 @@ __decorate([
 ], OrdersController.prototype, "create", null);
 __decorate([
     (0, common_1.Put)(':uuid/status'),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager', 'Cashier', 'Waiter', 'Kitchen'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'CASHIER', 'WAITER', 'KITCHEN'),
     (0, swagger_1.ApiOperation)({ summary: 'Update order status' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Order UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),
@@ -107,7 +107,7 @@ __decorate([
 ], OrdersController.prototype, "updateStatus", null);
 __decorate([
     (0, common_1.Put)(':uuid/items/:itemUuid/status'),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager', 'Kitchen'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'KITCHEN'),
     (0, swagger_1.ApiOperation)({ summary: 'Update order item status' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Order UUID' }),
     (0, swagger_1.ApiParam)({ name: 'itemUuid', description: 'Order Item UUID' }),
@@ -122,7 +122,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)(':uuid/items'),
     (0, common_1.HttpCode)(200),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager', 'Cashier', 'Waiter'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'CASHIER', 'WAITER'),
     (0, swagger_1.ApiOperation)({ summary: 'Add items to existing order' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Order UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),

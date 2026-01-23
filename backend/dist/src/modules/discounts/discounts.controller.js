@@ -52,7 +52,7 @@ let DiscountsController = class DiscountsController {
 exports.DiscountsController = DiscountsController;
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get all discounts with pagination' }),
     (0, swagger_1.ApiQuery)({ name: 'isActive', required: false, type: Boolean }),
     __param(0, (0, common_1.Query)()),
@@ -63,7 +63,7 @@ __decorate([
 ], DiscountsController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)('validate/:code'),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager', 'Cashier'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'CASHIER'),
     (0, swagger_1.ApiOperation)({ summary: 'Validate discount code for an order' }),
     (0, swagger_1.ApiParam)({ name: 'code', description: 'Discount code' }),
     (0, swagger_1.ApiQuery)({ name: 'amount', required: true, type: Number, description: 'Order amount' }),
@@ -75,7 +75,7 @@ __decorate([
 ], DiscountsController.prototype, "validateDiscount", null);
 __decorate([
     (0, common_1.Get)('by-code/:code'),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager', 'Cashier'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'CASHIER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get discount by code' }),
     (0, swagger_1.ApiParam)({ name: 'code', description: 'Discount code' }),
     __param(0, (0, common_1.Param)('code')),
@@ -85,7 +85,7 @@ __decorate([
 ], DiscountsController.prototype, "findByCode", null);
 __decorate([
     (0, common_1.Get)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get discount by UUID' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Discount UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),
@@ -96,7 +96,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)(),
     (0, common_1.HttpCode)(200),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER'),
     (0, swagger_1.ApiOperation)({ summary: 'Create new discount' }),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Request)()),
@@ -106,7 +106,7 @@ __decorate([
 ], DiscountsController.prototype, "create", null);
 __decorate([
     (0, common_1.Put)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER'),
     (0, swagger_1.ApiOperation)({ summary: 'Update discount by UUID' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Discount UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),
@@ -118,7 +118,7 @@ __decorate([
 ], DiscountsController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER'),
     (0, swagger_1.ApiOperation)({ summary: 'Delete discount by UUID (soft delete)' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Discount UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),

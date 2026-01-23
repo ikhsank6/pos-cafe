@@ -15,7 +15,8 @@ export class RequestContextInterceptor implements NestInterceptor {
 
     const store = {
       userId: user?.id,
-      userName: user?.name || user?.email, // Fallback to email if name is not in payload
+      userUuid: user?.uuid,
+      userName: user?.fullName || user?.email,
       userEmail: user?.email,
     };
 

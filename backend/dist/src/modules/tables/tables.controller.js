@@ -48,7 +48,7 @@ let TablesController = class TablesController {
 exports.TablesController = TablesController;
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager', 'Cashier', 'Waiter'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'CASHIER', 'WAITER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get all tables with pagination' }),
     (0, swagger_1.ApiQuery)({ name: 'status', required: false, enum: table_dto_1.TableStatus }),
     (0, swagger_1.ApiQuery)({ name: 'location', required: false, description: 'Filter by location' }),
@@ -61,7 +61,7 @@ __decorate([
 ], TablesController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager', 'Cashier', 'Waiter'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'CASHIER', 'WAITER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get table by UUID' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Table UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),
@@ -72,7 +72,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)(),
     (0, common_1.HttpCode)(200),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER'),
     (0, swagger_1.ApiOperation)({ summary: 'Create new table' }),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Request)()),
@@ -82,7 +82,7 @@ __decorate([
 ], TablesController.prototype, "create", null);
 __decorate([
     (0, common_1.Put)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER'),
     (0, swagger_1.ApiOperation)({ summary: 'Update table by UUID' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Table UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),
@@ -94,7 +94,7 @@ __decorate([
 ], TablesController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER'),
     (0, swagger_1.ApiOperation)({ summary: 'Delete table by UUID (soft delete)' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Table UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),
@@ -105,7 +105,7 @@ __decorate([
 ], TablesController.prototype, "remove", null);
 __decorate([
     (0, common_1.Put)(':uuid/status'),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager', 'Cashier', 'Waiter'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'CASHIER', 'WAITER'),
     (0, swagger_1.ApiOperation)({ summary: 'Update table status' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Table UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),

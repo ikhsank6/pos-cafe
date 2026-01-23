@@ -25,17 +25,11 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
         this.authService = authService;
     }
     async validate(payload) {
-        const user = await this.authService.validateUser(payload.sub);
-        if (!user) {
-            throw new common_1.UnauthorizedException();
-        }
         return {
+            ...payload,
             id: payload.sub,
-            uuid: payload.uuid,
-            email: payload.email,
-            name: payload.name,
-            avatar: payload.avatar,
-            role: payload.role,
+            fullName: payload.fullName || payload.name,
+            roles: payload.roles || (payload.role ? [payload.role] : []),
         };
     }
 };

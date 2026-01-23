@@ -13,18 +13,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: { sub: number; uuid: string; email: string; name: string; avatar: string; role: any }) {
-    const user = await this.authService.validateUser(payload.sub);
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-    return { 
-      id: payload.sub,
-      uuid: payload.uuid,
-      email: payload.email,
-      name: payload.name,
-      avatar: payload.avatar,
-      role: payload.role,
+  async validate(payload: any) {
+    return {
+      ...payload,
+      id: payload.sub, // Ensure both id and sub are available
+      // Map old fields to new ones for easier access
+      fullName: payload.fullName || payload.name,
+      roles: payload.roles || (payload.role ? [payload.role] : []),
     };
   }
 }

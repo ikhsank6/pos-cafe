@@ -93,9 +93,6 @@ export declare class AuthService {
             role: {
                 id: number;
                 uuid: string;
-                name: string;
-                code: string;
-                description: string | null;
                 isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
@@ -103,6 +100,9 @@ export declare class AuthService {
                 createdBy: string | null;
                 updatedBy: string | null;
                 deletedBy: string | null;
+                name: string;
+                code: string;
+                description: string | null;
             };
         } & {
             id: number;
@@ -119,23 +119,23 @@ export declare class AuthService {
     } & {
         id: number;
         uuid: string;
+        username: string;
+        email: string;
+        password: string;
+        fullName: string;
+        phone: string | null;
+        avatar: string | null;
         isActive: boolean;
+        verifiedAt: Date | null;
+        verificationToken: string | null;
+        resetPasswordToken: string | null;
+        resetPasswordExpires: Date | null;
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
         createdBy: string | null;
         updatedBy: string | null;
         deletedBy: string | null;
-        username: string;
-        email: string;
-        verificationToken: string | null;
-        resetPasswordToken: string | null;
-        password: string;
-        fullName: string;
-        phone: string | null;
-        avatar: string | null;
-        verifiedAt: Date | null;
-        resetPasswordExpires: Date | null;
     }>;
     getProfile(userId: number): Promise<{
         message: string;

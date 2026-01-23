@@ -50,7 +50,7 @@ let MenusController = class MenusController {
 exports.MenusController = MenusController;
 __decorate([
     (0, common_1.Get)('akses'),
-    (0, roles_decorator_1.Roles)('Admin'),
+    (0, roles_decorator_1.Roles)('OWNER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get all menus in nested tree format' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
@@ -58,7 +58,7 @@ __decorate([
 ], MenusController.prototype, "getTree", null);
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)('Admin'),
+    (0, roles_decorator_1.Roles)('OWNER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get all menus with hierarchy' }),
     (0, swagger_1.ApiQuery)({ name: 'search', required: false, description: 'Search query' }),
     __param(0, (0, common_1.Query)('search')),
@@ -68,7 +68,7 @@ __decorate([
 ], MenusController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin'),
+    (0, roles_decorator_1.Roles)('OWNER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get menu by UUID' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Menu UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),
@@ -79,7 +79,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)(),
     (0, common_1.HttpCode)(200),
-    (0, roles_decorator_1.Roles)('Admin'),
+    (0, roles_decorator_1.Roles)('OWNER'),
     (0, swagger_1.ApiOperation)({ summary: 'Create new menu' }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -89,7 +89,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)('reorder'),
     (0, common_1.HttpCode)(200),
-    (0, roles_decorator_1.Roles)('Admin'),
+    (0, roles_decorator_1.Roles)('OWNER'),
     (0, swagger_1.ApiOperation)({ summary: 'Reorder menus' }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -98,7 +98,7 @@ __decorate([
 ], MenusController.prototype, "reorder", null);
 __decorate([
     (0, common_1.Put)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin'),
+    (0, roles_decorator_1.Roles)('OWNER'),
     (0, swagger_1.ApiOperation)({ summary: 'Update menu by UUID' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Menu UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),
@@ -109,7 +109,7 @@ __decorate([
 ], MenusController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin'),
+    (0, roles_decorator_1.Roles)('OWNER'),
     (0, swagger_1.ApiOperation)({ summary: 'Delete menu by UUID (soft delete)' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Menu UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),

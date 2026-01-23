@@ -16,7 +16,8 @@ let RequestContextInterceptor = class RequestContextInterceptor {
         const user = request.user;
         const store = {
             userId: user?.id,
-            userName: user?.name || user?.email,
+            userUuid: user?.uuid,
+            userName: user?.fullName || user?.email,
             userEmail: user?.email,
         };
         return new rxjs_1.Observable((observer) => {

@@ -14,14 +14,14 @@ export class MenusController {
   constructor(private readonly menusService: MenusService) { }
 
   @Get('akses')
-  @Roles('Admin')
+  @Roles('OWNER')
   @ApiOperation({ summary: 'Get all menus in nested tree format' })
   async getTree() {
     return this.menusService.getTree();
   }
 
   @Get()
-  @Roles('Admin')
+  @Roles('OWNER')
   @ApiOperation({ summary: 'Get all menus with hierarchy' })
   @ApiQuery({ name: 'search', required: false, description: 'Search query' })
   async findAll(@Query('search') search?: string) {
@@ -29,7 +29,7 @@ export class MenusController {
   }
 
   @Get(':uuid')
-  @Roles('Admin')
+  @Roles('OWNER')
   @ApiOperation({ summary: 'Get menu by UUID' })
   @ApiParam({ name: 'uuid', description: 'Menu UUID' })
   async findOne(@Param('uuid', ParseUUIDPipe) uuid: string) {
@@ -38,7 +38,7 @@ export class MenusController {
 
   @Post()
   @HttpCode(200)
-  @Roles('Admin')
+  @Roles('OWNER')
   @ApiOperation({ summary: 'Create new menu' })
   async create(@Body() createMenuDto: CreateMenuDto) {
     return this.menusService.create(createMenuDto);
@@ -46,14 +46,14 @@ export class MenusController {
 
   @Post('reorder')
   @HttpCode(200)
-  @Roles('Admin')
+  @Roles('OWNER')
   @ApiOperation({ summary: 'Reorder menus' })
   async reorder(@Body() reorderMenusDto: ReorderMenusDto) {
     return this.menusService.reorder(reorderMenusDto);
   }
 
   @Put(':uuid')
-  @Roles('Admin')
+  @Roles('OWNER')
   @ApiOperation({ summary: 'Update menu by UUID' })
   @ApiParam({ name: 'uuid', description: 'Menu UUID' })
   async update(
@@ -64,7 +64,7 @@ export class MenusController {
   }
 
   @Delete(':uuid')
-  @Roles('Admin')
+  @Roles('OWNER')
   @ApiOperation({ summary: 'Delete menu by UUID (soft delete)' })
   @ApiParam({ name: 'uuid', description: 'Menu UUID' })
   async remove(@Param('uuid', ParseUUIDPipe) uuid: string) {

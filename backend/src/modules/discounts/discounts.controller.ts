@@ -15,7 +15,7 @@ export class DiscountsController {
     constructor(private readonly discountsService: DiscountsService) { }
 
     @Get()
-    @Roles('Admin', 'Owner', 'Manager')
+    @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Get all discounts with pagination' })
     @ApiQuery({ name: 'isActive', required: false, type: Boolean })
     async findAll(
@@ -27,7 +27,7 @@ export class DiscountsController {
     }
 
     @Get('validate/:code')
-    @Roles('Admin', 'Owner', 'Manager', 'Cashier')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER')
     @ApiOperation({ summary: 'Validate discount code for an order' })
     @ApiParam({ name: 'code', description: 'Discount code' })
     @ApiQuery({ name: 'amount', required: true, type: Number, description: 'Order amount' })
@@ -39,7 +39,7 @@ export class DiscountsController {
     }
 
     @Get('by-code/:code')
-    @Roles('Admin', 'Owner', 'Manager', 'Cashier')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER')
     @ApiOperation({ summary: 'Get discount by code' })
     @ApiParam({ name: 'code', description: 'Discount code' })
     async findByCode(@Param('code') code: string) {
@@ -47,7 +47,7 @@ export class DiscountsController {
     }
 
     @Get(':uuid')
-    @Roles('Admin', 'Owner', 'Manager')
+    @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Get discount by UUID' })
     @ApiParam({ name: 'uuid', description: 'Discount UUID' })
     async findOne(@Param('uuid', ParseUUIDPipe) uuid: string) {
@@ -56,14 +56,14 @@ export class DiscountsController {
 
     @Post()
     @HttpCode(200)
-    @Roles('Admin', 'Owner', 'Manager')
+    @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Create new discount' })
     async create(@Body() createDiscountDto: CreateDiscountDto, @Request() req) {
         return this.discountsService.create(createDiscountDto, req.user?.uuid);
     }
 
     @Put(':uuid')
-    @Roles('Admin', 'Owner', 'Manager')
+    @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Update discount by UUID' })
     @ApiParam({ name: 'uuid', description: 'Discount UUID' })
     async update(
@@ -75,7 +75,7 @@ export class DiscountsController {
     }
 
     @Delete(':uuid')
-    @Roles('Admin', 'Owner', 'Manager')
+    @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Delete discount by UUID (soft delete)' })
     @ApiParam({ name: 'uuid', description: 'Discount UUID' })
     async remove(@Param('uuid', ParseUUIDPipe) uuid: string, @Request() req) {

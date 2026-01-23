@@ -118,7 +118,11 @@ async function main() {
     });
   }
 
+  // ========================================
   // Create menus for Cafe POS
+  // ========================================
+
+  // 1. Dashboard
   const dashboardMenu = await prisma.menu.upsert({
     where: { id: 1 },
     update: {
@@ -134,6 +138,7 @@ async function main() {
     },
   });
 
+  // 2. Master Data (Parent)
   const masterMenu = await prisma.menu.upsert({
     where: { id: 2 },
     update: {},
@@ -146,6 +151,7 @@ async function main() {
     },
   });
 
+  // 2.1 Users
   const usersMenu = await prisma.menu.upsert({
     where: { id: 3 },
     update: {
@@ -162,6 +168,7 @@ async function main() {
     },
   });
 
+  // 2.2 Roles
   const rolesMenu = await prisma.menu.upsert({
     where: { id: 4 },
     update: {
@@ -178,6 +185,7 @@ async function main() {
     },
   });
 
+  // 2.3 Menus
   const menusMenu = await prisma.menu.upsert({
     where: { id: 5 },
     update: {
@@ -194,16 +202,228 @@ async function main() {
     },
   });
 
+  // 3. Product Management (Parent)
+  const productManagementMenu = await prisma.menu.upsert({
+    where: { id: 6 },
+    update: {},
+    create: {
+      name: 'Produk',
+      icon: 'Package',
+      order: 3,
+      createdBy: 'System',
+      updatedBy: 'System',
+    },
+  });
+
+  // 3.1 Categories
+  const categoriesMenu = await prisma.menu.upsert({
+    where: { id: 7 },
+    update: {
+      path: '/admin/product-management/categories',
+    },
+    create: {
+      name: 'Kategori',
+      path: '/admin/product-management/categories',
+      icon: 'FolderTree',
+      parentId: productManagementMenu.id,
+      order: 1,
+      createdBy: 'System',
+      updatedBy: 'System',
+    },
+  });
+
+  // 3.2 Products
+  const productsMenu = await prisma.menu.upsert({
+    where: { id: 8 },
+    update: {
+      path: '/admin/product-management/products',
+    },
+    create: {
+      name: 'Produk',
+      path: '/admin/product-management/products',
+      icon: 'Coffee',
+      parentId: productManagementMenu.id,
+      order: 2,
+      createdBy: 'System',
+      updatedBy: 'System',
+    },
+  });
+
+  // 4. Table Management (Parent)
+  const tableManagementMenu = await prisma.menu.upsert({
+    where: { id: 9 },
+    update: {},
+    create: {
+      name: 'Meja',
+      icon: 'Armchair',
+      order: 4,
+      createdBy: 'System',
+      updatedBy: 'System',
+    },
+  });
+
+  // 4.1 Tables
+  const tablesMenu = await prisma.menu.upsert({
+    where: { id: 10 },
+    update: {
+      path: '/admin/table-management/tables',
+    },
+    create: {
+      name: 'Daftar Meja',
+      path: '/admin/table-management/tables',
+      icon: 'LayoutGrid',
+      parentId: tableManagementMenu.id,
+      order: 1,
+      createdBy: 'System',
+      updatedBy: 'System',
+    },
+  });
+
+  // 5. Customer Management (Parent)
+  const customerManagementMenu = await prisma.menu.upsert({
+    where: { id: 11 },
+    update: {},
+    create: {
+      name: 'Pelanggan',
+      icon: 'UserCheck',
+      order: 5,
+      createdBy: 'System',
+      updatedBy: 'System',
+    },
+  });
+
+  // 5.1 Customers
+  const customersMenu = await prisma.menu.upsert({
+    where: { id: 12 },
+    update: {
+      path: '/admin/customer-management/customers',
+    },
+    create: {
+      name: 'Daftar Pelanggan',
+      path: '/admin/customer-management/customers',
+      icon: 'Users',
+      parentId: customerManagementMenu.id,
+      order: 1,
+      createdBy: 'System',
+      updatedBy: 'System',
+    },
+  });
+
+  // 6. Discount Management (Parent)
+  const discountManagementMenu = await prisma.menu.upsert({
+    where: { id: 13 },
+    update: {},
+    create: {
+      name: 'Diskon',
+      icon: 'Percent',
+      order: 6,
+      createdBy: 'System',
+      updatedBy: 'System',
+    },
+  });
+
+  // 6.1 Discounts
+  const discountsMenu = await prisma.menu.upsert({
+    where: { id: 14 },
+    update: {
+      path: '/admin/discount-management/discounts',
+    },
+    create: {
+      name: 'Daftar Diskon',
+      path: '/admin/discount-management/discounts',
+      icon: 'Tag',
+      parentId: discountManagementMenu.id,
+      order: 1,
+      createdBy: 'System',
+      updatedBy: 'System',
+    },
+  });
+
+  // 7. Order Management (Parent)
+  const orderManagementMenu = await prisma.menu.upsert({
+    where: { id: 15 },
+    update: {},
+    create: {
+      name: 'Pesanan',
+      icon: 'ClipboardList',
+      order: 7,
+      createdBy: 'System',
+      updatedBy: 'System',
+    },
+  });
+
+  // 7.1 Orders
+  const ordersMenu = await prisma.menu.upsert({
+    where: { id: 16 },
+    update: {
+      path: '/admin/order-management/orders',
+    },
+    create: {
+      name: 'Daftar Pesanan',
+      path: '/admin/order-management/orders',
+      icon: 'Receipt',
+      parentId: orderManagementMenu.id,
+      order: 1,
+      createdBy: 'System',
+      updatedBy: 'System',
+    },
+  });
+
+  // 8. Transaction Management (Parent)
+  const transactionManagementMenu = await prisma.menu.upsert({
+    where: { id: 17 },
+    update: {},
+    create: {
+      name: 'Transaksi',
+      icon: 'Wallet',
+      order: 8,
+      createdBy: 'System',
+      updatedBy: 'System',
+    },
+  });
+
+  // 8.1 Transactions
+  const transactionsMenu = await prisma.menu.upsert({
+    where: { id: 18 },
+    update: {
+      path: '/admin/transaction-management/transactions',
+    },
+    create: {
+      name: 'Riwayat Transaksi',
+      path: '/admin/transaction-management/transactions',
+      icon: 'CreditCard',
+      parentId: transactionManagementMenu.id,
+      order: 1,
+      createdBy: 'System',
+      updatedBy: 'System',
+    },
+  });
+
+  // ========================================
   // Create menu access for owner (full access)
-  const menus = [
+  // ========================================
+  const allMenus = [
     dashboardMenu,
     masterMenu,
     usersMenu,
     rolesMenu,
     menusMenu,
+    productManagementMenu,
+    categoriesMenu,
+    productsMenu,
+    tableManagementMenu,
+    tablesMenu,
+    customerManagementMenu,
+    customersMenu,
+    discountManagementMenu,
+    discountsMenu,
+    orderManagementMenu,
+    ordersMenu,
+    transactionManagementMenu,
+    transactionsMenu,
   ];
 
-  for (const menu of menus) {
+  for (const menu of allMenus) {
     await prisma.menuAccess.upsert({
       where: {
         roleId_menuId: {
@@ -241,7 +461,122 @@ async function main() {
     });
   }
 
+  // Give Manager access to POS features (except Master Data)
+  const managerMenus = [
+    productManagementMenu,
+    categoriesMenu,
+    productsMenu,
+    tableManagementMenu,
+    tablesMenu,
+    customerManagementMenu,
+    customersMenu,
+    discountManagementMenu,
+    discountsMenu,
+    orderManagementMenu,
+    ordersMenu,
+    transactionManagementMenu,
+    transactionsMenu,
+  ];
+
+  for (const menu of managerMenus) {
+    await prisma.menuAccess.upsert({
+      where: {
+        roleId_menuId: {
+          roleId: managerRole.id,
+          menuId: menu.id,
+        },
+      },
+      update: {},
+      create: {
+        roleId: managerRole.id,
+        menuId: menu.id,
+        createdBy: 'System',
+        updatedBy: 'System',
+      },
+    });
+  }
+
+  // Give Cashier access to Orders and Transactions
+  const cashierMenus = [
+    orderManagementMenu,
+    ordersMenu,
+    transactionManagementMenu,
+    transactionsMenu,
+    customerManagementMenu,
+    customersMenu,
+  ];
+
+  for (const menu of cashierMenus) {
+    await prisma.menuAccess.upsert({
+      where: {
+        roleId_menuId: {
+          roleId: cashierRole.id,
+          menuId: menu.id,
+        },
+      },
+      update: {},
+      create: {
+        roleId: cashierRole.id,
+        menuId: menu.id,
+        createdBy: 'System',
+        updatedBy: 'System',
+      },
+    });
+  }
+
+  // Give Kitchen access to Orders only
+  const kitchenMenus = [orderManagementMenu, ordersMenu];
+
+  for (const menu of kitchenMenus) {
+    await prisma.menuAccess.upsert({
+      where: {
+        roleId_menuId: {
+          roleId: kitchenRole.id,
+          menuId: menu.id,
+        },
+      },
+      update: {},
+      create: {
+        roleId: kitchenRole.id,
+        menuId: menu.id,
+        createdBy: 'System',
+        updatedBy: 'System',
+      },
+    });
+  }
+
+  // Give Waiter access to Orders and Tables
+  const waiterMenus = [
+    orderManagementMenu,
+    ordersMenu,
+    tableManagementMenu,
+    tablesMenu,
+  ];
+
+  for (const menu of waiterMenus) {
+    await prisma.menuAccess.upsert({
+      where: {
+        roleId_menuId: {
+          roleId: waiterRole.id,
+          menuId: menu.id,
+        },
+      },
+      update: {},
+      create: {
+        roleId: waiterRole.id,
+        menuId: menu.id,
+        createdBy: 'System',
+        updatedBy: 'System',
+      },
+    });
+  }
+
   console.log('Database seeded successfully for Cafe POS!');
+  console.log('Owner has access to all menus.');
+  console.log('Manager has access to all POS features (except Master Data).');
+  console.log('Cashier has access to Orders, Transactions, and Customers.');
+  console.log('Kitchen has access to Orders only.');
+  console.log('Waiter has access to Orders and Tables.');
 }
 
 main()
@@ -252,3 +587,4 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+

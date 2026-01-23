@@ -14,7 +14,6 @@ export declare class MenuAccessService {
             children: {
                 id: number;
                 uuid: string;
-                name: string;
                 isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
@@ -22,6 +21,7 @@ export declare class MenuAccessService {
                 createdBy: string | null;
                 updatedBy: string | null;
                 deletedBy: string | null;
+                name: string;
                 path: string | null;
                 icon: string | null;
                 parentId: number | null;
@@ -30,7 +30,6 @@ export declare class MenuAccessService {
         } & {
             id: number;
             uuid: string;
-            name: string;
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
@@ -38,6 +37,7 @@ export declare class MenuAccessService {
             createdBy: string | null;
             updatedBy: string | null;
             deletedBy: string | null;
+            name: string;
             path: string | null;
             icon: string | null;
             parentId: number | null;

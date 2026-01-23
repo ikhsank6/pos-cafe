@@ -15,14 +15,14 @@ export class RolesController {
   constructor(private readonly rolesService: RolesService) { }
 
   @Get()
-  @Roles('Admin')
+  @Roles('OWNER')
   @ApiOperation({ summary: 'Get all roles with pagination' })
   async findAll(@Query() query: PaginationQueryDto) {
     return this.rolesService.findAll(query.page, query.limit, query.search);
   }
 
   @Get(':uuid')
-  @Roles('Admin')
+  @Roles('OWNER')
   @ApiOperation({ summary: 'Get role by UUID' })
   @ApiParam({ name: 'uuid', description: 'Role UUID' })
   async findOne(@Param('uuid', ParseUUIDPipe) uuid: string) {
@@ -31,14 +31,14 @@ export class RolesController {
 
   @Post()
   @HttpCode(200)
-  @Roles('Admin')
+  @Roles('OWNER')
   @ApiOperation({ summary: 'Create new role' })
   async create(@Body() createRoleDto: CreateRoleDto) {
     return this.rolesService.create(createRoleDto);
   }
 
   @Put(':uuid')
-  @Roles('Admin')
+  @Roles('OWNER')
   @ApiOperation({ summary: 'Update role by UUID' })
   @ApiParam({ name: 'uuid', description: 'Role UUID' })
   async update(
@@ -49,7 +49,7 @@ export class RolesController {
   }
 
   @Delete(':uuid')
-  @Roles('Admin')
+  @Roles('OWNER')
   @ApiOperation({ summary: 'Delete role by UUID (soft delete)' })
   @ApiParam({ name: 'uuid', description: 'Role UUID' })
   async remove(@Param('uuid', ParseUUIDPipe) uuid: string) {

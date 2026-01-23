@@ -15,14 +15,14 @@ export class CustomersController {
     constructor(private readonly customersService: CustomersService) { }
 
     @Get()
-    @Roles('Admin', 'Owner', 'Manager', 'Cashier')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER')
     @ApiOperation({ summary: 'Get all customers with pagination' })
     async findAll(@Query() query: PaginationQueryDto) {
         return this.customersService.findAll(query.page, query.limit, query.search);
     }
 
     @Get('by-phone/:phone')
-    @Roles('Admin', 'Owner', 'Manager', 'Cashier')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER')
     @ApiOperation({ summary: 'Get customer by phone number' })
     @ApiParam({ name: 'phone', description: 'Customer phone number' })
     async findByPhone(@Param('phone') phone: string) {
@@ -30,7 +30,7 @@ export class CustomersController {
     }
 
     @Get(':uuid')
-    @Roles('Admin', 'Owner', 'Manager', 'Cashier')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER')
     @ApiOperation({ summary: 'Get customer by UUID' })
     @ApiParam({ name: 'uuid', description: 'Customer UUID' })
     async findOne(@Param('uuid', ParseUUIDPipe) uuid: string) {
@@ -39,14 +39,14 @@ export class CustomersController {
 
     @Post()
     @HttpCode(200)
-    @Roles('Admin', 'Owner', 'Manager', 'Cashier')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER')
     @ApiOperation({ summary: 'Create new customer' })
     async create(@Body() createCustomerDto: CreateCustomerDto, @Request() req) {
         return this.customersService.create(createCustomerDto, req.user?.uuid);
     }
 
     @Put(':uuid')
-    @Roles('Admin', 'Owner', 'Manager', 'Cashier')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER')
     @ApiOperation({ summary: 'Update customer by UUID' })
     @ApiParam({ name: 'uuid', description: 'Customer UUID' })
     async update(
@@ -58,7 +58,7 @@ export class CustomersController {
     }
 
     @Delete(':uuid')
-    @Roles('Admin', 'Owner', 'Manager')
+    @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Delete customer by UUID (soft delete)' })
     @ApiParam({ name: 'uuid', description: 'Customer UUID' })
     async remove(@Param('uuid', ParseUUIDPipe) uuid: string, @Request() req) {
@@ -67,7 +67,7 @@ export class CustomersController {
 
     @Post(':uuid/loyalty-points')
     @HttpCode(200)
-    @Roles('Admin', 'Owner', 'Manager', 'Cashier')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER')
     @ApiOperation({ summary: 'Add/subtract loyalty points' })
     @ApiParam({ name: 'uuid', description: 'Customer UUID' })
     async addLoyaltyPoints(

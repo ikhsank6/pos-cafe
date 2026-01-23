@@ -15,7 +15,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) { }
 
   @Get()
-  @Roles('Admin')
+  @Roles('OWNER')
   @ApiOperation({ summary: 'Get all users with pagination' })
   async findAll(@Query() query: PaginationQueryDto) {
     return this.usersService.findAll(
@@ -27,7 +27,7 @@ export class UsersController {
   }
 
   @Get(':uuid')
-  @Roles('Admin')
+  @Roles('OWNER')
   @ApiOperation({ summary: 'Get user by UUID' })
   @ApiParam({ name: 'uuid', description: 'User UUID' })
   async findOne(@Param('uuid', ParseUUIDPipe) uuid: string) {
@@ -36,7 +36,7 @@ export class UsersController {
 
   @Post()
   @HttpCode(200)
-  @Roles('Admin')
+  @Roles('OWNER')
   @ApiOperation({ summary: 'Create new user' })
   async create(@Body() createUserDto: CreateUserDto, @Request() req: any) {
     const currentUserId = req.user?.id;
@@ -44,7 +44,7 @@ export class UsersController {
   }
 
   @Put(':uuid')
-  @Roles('Admin')
+  @Roles('OWNER')
   @ApiOperation({ summary: 'Update user by UUID' })
   @ApiParam({ name: 'uuid', description: 'User UUID' })
   async update(
@@ -55,7 +55,7 @@ export class UsersController {
   }
 
   @Delete(':uuid')
-  @Roles('Admin')
+  @Roles('OWNER')
   @ApiOperation({ summary: 'Delete user by UUID (soft delete)' })
   @ApiParam({ name: 'uuid', description: 'User UUID' })
   async remove(@Param('uuid', ParseUUIDPipe) uuid: string) {
@@ -64,7 +64,7 @@ export class UsersController {
 
   @Post(':uuid/resend-verification')
   @HttpCode(200)
-  @Roles('Admin')
+  @Roles('OWNER')
   @ApiOperation({ summary: 'Resend verification email to user' })
   @ApiParam({ name: 'uuid', description: 'User UUID' })
   @ApiResponse({ status: 200, description: 'Verification email sent' })

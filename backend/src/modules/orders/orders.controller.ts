@@ -15,7 +15,7 @@ export class OrdersController {
     constructor(private readonly ordersService: OrdersService) { }
 
     @Get()
-    @Roles('Admin', 'Owner', 'Manager', 'Cashier', 'Waiter')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER', 'WAITER')
     @ApiOperation({ summary: 'Get all orders with pagination' })
     @ApiQuery({ name: 'status', required: false, enum: OrderStatus })
     @ApiQuery({ name: 'orderType', required: false, enum: OrderType })
@@ -37,14 +37,14 @@ export class OrdersController {
     }
 
     @Get('kitchen')
-    @Roles('Admin', 'Owner', 'Manager', 'Kitchen')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'KITCHEN')
     @ApiOperation({ summary: 'Get active orders for kitchen display' })
     async getKitchenOrders() {
         return this.ordersService.getKitchenOrders();
     }
 
     @Get(':uuid')
-    @Roles('Admin', 'Owner', 'Manager', 'Cashier', 'Waiter')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER', 'WAITER')
     @ApiOperation({ summary: 'Get order by UUID' })
     @ApiParam({ name: 'uuid', description: 'Order UUID' })
     async findOne(@Param('uuid', ParseUUIDPipe) uuid: string) {
@@ -53,14 +53,14 @@ export class OrdersController {
 
     @Post()
     @HttpCode(200)
-    @Roles('Admin', 'Owner', 'Manager', 'Cashier', 'Waiter')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER', 'WAITER')
     @ApiOperation({ summary: 'Create new order' })
     async create(@Body() createOrderDto: CreateOrderDto, @Request() req) {
         return this.ordersService.create(createOrderDto, req.user?.uuid);
     }
 
     @Put(':uuid/status')
-    @Roles('Admin', 'Owner', 'Manager', 'Cashier', 'Waiter', 'Kitchen')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER', 'WAITER', 'KITCHEN')
     @ApiOperation({ summary: 'Update order status' })
     @ApiParam({ name: 'uuid', description: 'Order UUID' })
     async updateStatus(
@@ -72,7 +72,7 @@ export class OrdersController {
     }
 
     @Put(':uuid/items/:itemUuid/status')
-    @Roles('Admin', 'Owner', 'Manager', 'Kitchen')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'KITCHEN')
     @ApiOperation({ summary: 'Update order item status' })
     @ApiParam({ name: 'uuid', description: 'Order UUID' })
     @ApiParam({ name: 'itemUuid', description: 'Order Item UUID' })
@@ -87,7 +87,7 @@ export class OrdersController {
 
     @Post(':uuid/items')
     @HttpCode(200)
-    @Roles('Admin', 'Owner', 'Manager', 'Cashier', 'Waiter')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER', 'WAITER')
     @ApiOperation({ summary: 'Add items to existing order' })
     @ApiParam({ name: 'uuid', description: 'Order UUID' })
     async addItems(

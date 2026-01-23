@@ -49,7 +49,7 @@ let UsersController = class UsersController {
 exports.UsersController = UsersController;
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)('Admin'),
+    (0, roles_decorator_1.Roles)('OWNER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get all users with pagination' }),
     __param(0, (0, common_1.Query)()),
     __metadata("design:type", Function),
@@ -58,7 +58,7 @@ __decorate([
 ], UsersController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin'),
+    (0, roles_decorator_1.Roles)('OWNER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get user by UUID' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'User UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),
@@ -69,7 +69,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)(),
     (0, common_1.HttpCode)(200),
-    (0, roles_decorator_1.Roles)('Admin'),
+    (0, roles_decorator_1.Roles)('OWNER'),
     (0, swagger_1.ApiOperation)({ summary: 'Create new user' }),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Request)()),
@@ -79,7 +79,7 @@ __decorate([
 ], UsersController.prototype, "create", null);
 __decorate([
     (0, common_1.Put)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin'),
+    (0, roles_decorator_1.Roles)('OWNER'),
     (0, swagger_1.ApiOperation)({ summary: 'Update user by UUID' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'User UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),
@@ -90,7 +90,7 @@ __decorate([
 ], UsersController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin'),
+    (0, roles_decorator_1.Roles)('OWNER'),
     (0, swagger_1.ApiOperation)({ summary: 'Delete user by UUID (soft delete)' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'User UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),
@@ -101,7 +101,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)(':uuid/resend-verification'),
     (0, common_1.HttpCode)(200),
-    (0, roles_decorator_1.Roles)('Admin'),
+    (0, roles_decorator_1.Roles)('OWNER'),
     (0, swagger_1.ApiOperation)({ summary: 'Resend verification email to user' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'User UUID' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Verification email sent' }),

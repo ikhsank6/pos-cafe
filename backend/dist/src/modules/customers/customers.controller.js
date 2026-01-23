@@ -51,7 +51,7 @@ let CustomersController = class CustomersController {
 exports.CustomersController = CustomersController;
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager', 'Cashier'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'CASHIER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get all customers with pagination' }),
     __param(0, (0, common_1.Query)()),
     __metadata("design:type", Function),
@@ -60,7 +60,7 @@ __decorate([
 ], CustomersController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)('by-phone/:phone'),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager', 'Cashier'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'CASHIER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get customer by phone number' }),
     (0, swagger_1.ApiParam)({ name: 'phone', description: 'Customer phone number' }),
     __param(0, (0, common_1.Param)('phone')),
@@ -70,7 +70,7 @@ __decorate([
 ], CustomersController.prototype, "findByPhone", null);
 __decorate([
     (0, common_1.Get)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager', 'Cashier'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'CASHIER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get customer by UUID' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Customer UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),
@@ -81,7 +81,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)(),
     (0, common_1.HttpCode)(200),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager', 'Cashier'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'CASHIER'),
     (0, swagger_1.ApiOperation)({ summary: 'Create new customer' }),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Request)()),
@@ -91,7 +91,7 @@ __decorate([
 ], CustomersController.prototype, "create", null);
 __decorate([
     (0, common_1.Put)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager', 'Cashier'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'CASHIER'),
     (0, swagger_1.ApiOperation)({ summary: 'Update customer by UUID' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Customer UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),
@@ -103,7 +103,7 @@ __decorate([
 ], CustomersController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER'),
     (0, swagger_1.ApiOperation)({ summary: 'Delete customer by UUID (soft delete)' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Customer UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),
@@ -115,7 +115,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)(':uuid/loyalty-points'),
     (0, common_1.HttpCode)(200),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager', 'Cashier'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'CASHIER'),
     (0, swagger_1.ApiOperation)({ summary: 'Add/subtract loyalty points' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Customer UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),

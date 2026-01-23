@@ -9,7 +9,6 @@ export declare class MenuAccessController {
             children: {
                 id: number;
                 uuid: string;
-                name: string;
                 isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
@@ -17,6 +16,7 @@ export declare class MenuAccessController {
                 createdBy: string | null;
                 updatedBy: string | null;
                 deletedBy: string | null;
+                name: string;
                 path: string | null;
                 icon: string | null;
                 parentId: number | null;
@@ -25,7 +25,6 @@ export declare class MenuAccessController {
         } & {
             id: number;
             uuid: string;
-            name: string;
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
@@ -33,6 +32,7 @@ export declare class MenuAccessController {
             createdBy: string | null;
             updatedBy: string | null;
             deletedBy: string | null;
+            name: string;
             path: string | null;
             icon: string | null;
             parentId: number | null;

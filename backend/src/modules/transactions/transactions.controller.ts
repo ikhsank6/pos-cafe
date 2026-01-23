@@ -15,7 +15,7 @@ export class TransactionsController {
     constructor(private readonly transactionsService: TransactionsService) { }
 
     @Get()
-    @Roles('Admin', 'Owner', 'Manager', 'Cashier')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER')
     @ApiOperation({ summary: 'Get all transactions with pagination' })
     @ApiQuery({ name: 'status', required: false, enum: TransactionStatus })
     @ApiQuery({ name: 'paymentMethod', required: false, enum: PaymentMethod })
@@ -40,7 +40,7 @@ export class TransactionsController {
     }
 
     @Get('daily-report')
-    @Roles('Admin', 'Owner', 'Manager')
+    @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Get daily sales report' })
     @ApiQuery({ name: 'date', required: false, description: 'Date for report (YYYY-MM-DD), defaults to today' })
     async getDailySalesReport(@Query('date') date?: string) {
@@ -48,7 +48,7 @@ export class TransactionsController {
     }
 
     @Get(':uuid')
-    @Roles('Admin', 'Owner', 'Manager', 'Cashier')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER')
     @ApiOperation({ summary: 'Get transaction by UUID' })
     @ApiParam({ name: 'uuid', description: 'Transaction UUID' })
     async findOne(@Param('uuid', ParseUUIDPipe) uuid: string) {
@@ -57,7 +57,7 @@ export class TransactionsController {
 
     @Post()
     @HttpCode(200)
-    @Roles('Admin', 'Owner', 'Manager', 'Cashier')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER')
     @ApiOperation({ summary: 'Create payment for order' })
     async create(@Body() createTransactionDto: CreateTransactionDto, @Request() req) {
         return this.transactionsService.create(createTransactionDto, req.user?.uuid);
@@ -65,7 +65,7 @@ export class TransactionsController {
 
     @Post(':uuid/refund')
     @HttpCode(200)
-    @Roles('Admin', 'Owner', 'Manager')
+    @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Refund transaction' })
     @ApiParam({ name: 'uuid', description: 'Transaction UUID' })
     async refund(

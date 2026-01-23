@@ -1,0 +1,106 @@
+import api from '@/config/axios';
+import { createQueryParams } from '@/lib/utils';
+import type { Product } from './product.service';
+import type { Table } from './table.service';
+import type { Customer } from './customer.service';
+
+export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'served' | 'completed' | 'cancelled';
+export type OrderItemStatus = 'pending' | 'preparing' | 'ready' | 'served' | 'cancelled';
+export type OrderType = 'dine_in' | 'takeaway' | 'delivery';
+
+export interface OrderItem {
+  uuid: string;
+  productUuid: string;
+  product?: Product;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+  notes?: string;
+  status: OrderItemStatus;
+}
+
+export interface Order {
+  uuid: string;
+  orderNumber: string;
+  type: OrderType;
+  tableUuid?: string;
+  table?: Table;
+  customerUuid?: string;
+  customer?: Customer;
+  discountUuid?: string;
+  items: OrderItem[];
+  subtotal: number;
+  discountAmount: number;
+  taxAmount: number;
+  totalAmount: number;
+  notes?: string;
+  status: OrderStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateOrderData {
+  type: OrderType;
+  tableUuid?: string;
+  customerUuid?: string;
+  discountCode?: string;
+  items: {
+    productUuid: string;
+    quantity: number;
+    notes?: string;
+  }[];
+  notes?: string;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+export const orderService = {
+  getAll: async (params?: { page?: number; limit?: number; status?: OrderStatus; type?: OrderType }): Promise<PaginatedResponse<Order>> => {
+    const query = createQueryParams(params || {});
+    const response = await api.get(`/order-management/orders${query ? `?${query}` : ''}`) as any;
+    return response;
+  },
+
+  getById: async (uuid: string): Promise<Order> => {
+    const response = await api.get(`/order-management/orders/${uuid}`) as any;
+    return response?.data;
+  },
+
+  create: async (data: CreateOrderData) => {
+    const response = await api.post('/order-management/orders', data) as any;
+    return response?.data;
+  },
+
+  update: async (uuid: string, data: Partial<CreateOrderData>) => {
+    const response = await api.put(`/order-management/orders/${uuid}`, data) as any;
+    return response?.data;
+  },
+
+  updateStatus: async (uuid: string, status: OrderStatus) => {
+    const response = await api.patch(`/order-management/orders/${uuid}/status`, { status }) as any;
+    return response?.data;
+  },
+
+  cancel: async (uuid: string, reason?: string) => {
+    const response = await api.patch(`/order-management/orders/${uuid}/cancel`, { reason }) as any;
+    return response?.data;
+  },
+
+  getKitchenOrders: async (): Promise<Order[]> => {
+    const response = await api.get('/order-management/orders/kitchen') as any;
+    return response?.data || [];
+  },
+
+  updateItemStatus: async (orderUuid: string, itemUuid: string, status: OrderItemStatus) => {
+    const response = await api.patch(`/order-management/orders/${orderUuid}/items/${itemUuid}/status`, { status }) as any;
+    return response?.data;
+  },
+};

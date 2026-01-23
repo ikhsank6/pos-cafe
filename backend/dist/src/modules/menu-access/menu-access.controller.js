@@ -55,7 +55,7 @@ __decorate([
 __decorate([
     (0, common_1.Get)('role/:roleUuid'),
     (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)('Admin'),
+    (0, roles_decorator_1.Roles)('OWNER'),
     __param(0, (0, common_1.Param)('roleUuid', common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -65,7 +65,7 @@ __decorate([
     (0, common_1.Post)(),
     (0, common_1.HttpCode)(200),
     (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)('Admin'),
+    (0, roles_decorator_1.Roles)('OWNER'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [menu_access_dto_1.CreateMenuAccessDto]),
@@ -74,7 +74,7 @@ __decorate([
 __decorate([
     (0, common_1.Put)('bulk'),
     (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)('Admin'),
+    (0, roles_decorator_1.Roles)('OWNER'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [menu_access_dto_1.BulkMenuAccessDto]),
@@ -83,7 +83,7 @@ __decorate([
 __decorate([
     (0, common_1.Put)(':uuid'),
     (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)('Admin'),
+    (0, roles_decorator_1.Roles)('OWNER'),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -93,7 +93,7 @@ __decorate([
 __decorate([
     (0, common_1.Delete)(':uuid'),
     (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)('Admin'),
+    (0, roles_decorator_1.Roles)('OWNER'),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),

@@ -46,7 +46,7 @@ let CategoriesController = class CategoriesController {
 exports.CategoriesController = CategoriesController;
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get all categories with pagination' }),
     (0, swagger_1.ApiQuery)({ name: 'isActive', required: false, type: Boolean }),
     __param(0, (0, common_1.Query)()),
@@ -57,7 +57,7 @@ __decorate([
 ], CategoriesController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get category by UUID' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Category UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),
@@ -68,7 +68,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)(),
     (0, common_1.HttpCode)(200),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER'),
     (0, swagger_1.ApiOperation)({ summary: 'Create new category' }),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Request)()),
@@ -78,7 +78,7 @@ __decorate([
 ], CategoriesController.prototype, "create", null);
 __decorate([
     (0, common_1.Put)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER'),
     (0, swagger_1.ApiOperation)({ summary: 'Update category by UUID' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Category UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),
@@ -90,7 +90,7 @@ __decorate([
 ], CategoriesController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin', 'Owner', 'Manager'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER'),
     (0, swagger_1.ApiOperation)({ summary: 'Delete category by UUID (soft delete)' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Category UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),

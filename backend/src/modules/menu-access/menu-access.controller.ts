@@ -20,7 +20,7 @@ export class MenuAccessController {
 
   @Get('role/:roleUuid')
   @UseGuards(RolesGuard)
-  @Roles('Admin')
+  @Roles('OWNER')
   async findByRole(@Param('roleUuid', ParseUUIDPipe) roleUuid: string) {
     return this.menuAccessService.findByRole(roleUuid);
   }
@@ -28,21 +28,21 @@ export class MenuAccessController {
   @Post()
   @HttpCode(200)
   @UseGuards(RolesGuard)
-  @Roles('Admin')
+  @Roles('OWNER')
   async create(@Body() createMenuAccessDto: CreateMenuAccessDto) {
     return this.menuAccessService.create(createMenuAccessDto);
   }
 
   @Put('bulk')
   @UseGuards(RolesGuard)
-  @Roles('Admin')
+  @Roles('OWNER')
   async bulkUpdate(@Body() bulkDto: BulkMenuAccessDto) {
     return this.menuAccessService.bulkUpdate(bulkDto);
   }
 
   @Put(':uuid')
   @UseGuards(RolesGuard)
-  @Roles('Admin')
+  @Roles('OWNER')
   async update(
     @Param('uuid', ParseUUIDPipe) uuid: string,
     @Body() updateMenuAccessDto: UpdateMenuAccessDto,
@@ -52,7 +52,7 @@ export class MenuAccessController {
 
   @Delete(':uuid')
   @UseGuards(RolesGuard)
-  @Roles('Admin')
+  @Roles('OWNER')
   async remove(@Param('uuid', ParseUUIDPipe) uuid: string) {
     return this.menuAccessService.remove(uuid);
   }
