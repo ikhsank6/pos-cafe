@@ -22,6 +22,8 @@ export declare class ProductResource {
     media: {
         uuid: string;
         path: string;
+        filename: string;
+        originalName: string;
     } | null;
     constructor(product: any);
     static collection(products: any[]): ProductResource[];
@@ -49,6 +51,8 @@ export declare class ProductResource {
         media: {
             uuid: string;
             path: string;
+            filename: string;
+            originalName: string;
         } | null;
     };
 }

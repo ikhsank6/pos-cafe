@@ -12,6 +12,12 @@ export interface Product {
   imageUrl?: string;
   categoryUuid?: string;
   category?: Category;
+  media?: {
+    uuid: string;
+    path: string;
+    filename: string;
+    originalName: string;
+  };
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -25,6 +31,7 @@ export interface ProductFormData {
   sku?: string;
   imageUrl?: string;
   categoryUuid?: string;
+  mediaUuid?: string;
   isActive?: boolean;
 }
 

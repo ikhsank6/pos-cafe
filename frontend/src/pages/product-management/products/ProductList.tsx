@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { showSuccess, showError, formatCurrency } from '@/lib/utils';
+import { type Media } from '@/components/ui/image-upload';
+import { env } from '@/config/env';
 import { useTable } from '@/hooks/useTable';
 import { DeleteDialog } from '@/components/ui/delete-dialog';
 import { 
@@ -46,6 +48,7 @@ export default function ProductList() {
   // Delete dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [currentMedia, setCurrentMedia] = useState<Media | null>(null);
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productFormSchema) as any,
@@ -55,6 +58,7 @@ export default function ProductList() {
       price: 0,
       stock: 0,
       categoryUuid: '',
+      mediaUuid: '',
       isActive: true,
     },
   });
@@ -91,9 +95,11 @@ export default function ProductList() {
       price: 0,
       stock: 0,
       categoryUuid: '',
+      mediaUuid: '',
       isActive: true,
     });
     setSelectedProduct(null);
+    setCurrentMedia(null);
     setDrawerMode('create');
     setDrawerOpen(true);
   };
@@ -106,8 +112,20 @@ export default function ProductList() {
       price: product.price,
       stock: product.stock,
       categoryUuid: product.category?.uuid || '',
+      mediaUuid: product.media?.uuid || '',
       isActive: product.isActive,
     });
+    // Set current media for ImageUpload component
+    if (product.media) {
+      setCurrentMedia({
+        uuid: product.media.uuid,
+        filename: product.media.filename,
+        original_name: product.media.originalName,
+        url: product.media.path,
+      });
+    } else {
+      setCurrentMedia(null);
+    }
     setDrawerMode('edit');
     setDrawerOpen(true);
   };
@@ -166,12 +184,30 @@ export default function ProductList() {
     {
       key: 'name',
       header: 'Produk',
-      cell: (product) => (
-        <div className="flex flex-col">
-          <span className="font-medium">{product.name}</span>
-          {product.sku && <span className="text-xs text-muted-foreground">SKU: {product.sku}</span>}
-        </div>
-      ),
+      cell: (product) => {
+        const imageUrl = product.media?.path 
+          ? `${env.API_URL}${product.media.path}`
+          : null;
+        return (
+          <div className="flex items-center gap-3">
+            {imageUrl ? (
+              <img 
+                src={imageUrl} 
+                alt={product.name} 
+                className="h-10 w-10 rounded-lg object-cover ring-1 ring-border"
+              />
+            ) : (
+              <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground text-sm font-bold">
+                {product.name.charAt(0)}
+              </div>
+            )}
+            <div className="flex flex-col">
+              <span className="font-medium">{product.name}</span>
+              {product.sku && <span className="text-xs text-muted-foreground">SKU: {product.sku}</span>}
+            </div>
+          </div>
+        );
+      },
     },
     {
       key: 'category',
@@ -270,6 +306,8 @@ export default function ProductList() {
         onSubmit={handleSubmit}
         loading={submitting}
         categories={categories}
+        currentMedia={currentMedia}
+        onMediaChange={setCurrentMedia}
       />
 
       {/* Delete Confirmation Dialog */}

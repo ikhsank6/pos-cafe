@@ -78,8 +78,10 @@ export function ImageUpload({ value, onChange, disabled, className }: ImageUploa
   const getFullUrl = (val: string | Media | null | undefined) => {
     if (!val) return '';
     const url = typeof val === 'string' ? val : val.url;
+    if (!url) return '';
     if (url.startsWith('http')) return url;
-    return `${env.API_URL}${url}`;
+    // Prepend API_URL to the path (e.g., /upload/images/uuid -> http://localhost:3000/api/upload/images/uuid)
+    return `${env.API_URL}${url.startsWith('/') ? url : `/${url}`}`;
   };
 
   const getDisplayName = (val: string | Media | null | undefined) => {

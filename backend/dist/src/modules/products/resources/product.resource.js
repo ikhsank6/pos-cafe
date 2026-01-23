@@ -43,7 +43,9 @@ class ProductResource {
         } : null;
         this.media = product.media ? {
             uuid: product.media.uuid,
-            path: product.media.path,
+            path: `/upload/images/${product.media.uuid}`,
+            filename: product.media.filename,
+            originalName: product.media.originalName,
         } : null;
     }
     static collection(products) {

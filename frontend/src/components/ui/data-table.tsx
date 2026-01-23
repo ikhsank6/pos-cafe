@@ -233,8 +233,31 @@ export function DataTable<T>({
   showViewToggle = true,
   className,
 }: DataTableProps<T>) {
-  const [viewMode, setViewMode] = React.useState<'table' | 'grid'>('table')
+  // Initialize viewMode based on screen size
+  const getInitialViewMode = () => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768 ? 'grid' : 'table';
+    }
+    return 'table';
+  };
+  
+  const [viewMode, setViewMode] = React.useState<'table' | 'grid'>(getInitialViewMode)
   const [goToPage, setGoToPage] = React.useState('')
+
+  // Auto-switch view mode based on screen size
+  React.useEffect(() => {
+    const handleResize = () => {
+      const isSmallScreen = window.innerWidth < 768;
+      setViewMode(isSmallScreen ? 'grid' : 'table');
+    };
+
+    // Set initial value
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {

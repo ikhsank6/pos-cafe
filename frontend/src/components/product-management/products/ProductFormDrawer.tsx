@@ -13,6 +13,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Combobox } from '@/components/ui/combobox';
+import { ImageUpload, type Media } from '@/components/ui/image-upload';
 import { z } from 'zod';
 import { type Category } from '@/services/category.service';
 
@@ -23,6 +24,7 @@ export const productFormSchema = z.object({
   price: z.coerce.number().min(0, 'Harga tidak boleh negatif'),
   stock: z.coerce.number().min(0, 'Stok tidak boleh negatif').optional(),
   categoryUuid: z.string().optional(),
+  mediaUuid: z.string().optional(),
   isActive: z.boolean().default(true),
 });
 
@@ -36,6 +38,8 @@ interface ProductFormDrawerProps {
   onSubmit: (data: ProductFormData) => void;
   loading: boolean;
   categories: Category[];
+  currentMedia?: Media | null;
+  onMediaChange?: (media: Media | null) => void;
 }
 
 // Required field label component
@@ -52,7 +56,9 @@ export function ProductFormDrawer({
   form, 
   onSubmit, 
   loading,
-  categories 
+  categories,
+  currentMedia,
+  onMediaChange
 }: ProductFormDrawerProps) {
   return (
     <FormDialog
@@ -80,6 +86,21 @@ export function ProductFormDrawer({
               </FormItem>
             )}
           />
+
+          {/* Image Upload */}
+          <FormItem>
+            <FormLabel>Gambar Produk (Opsional)</FormLabel>
+            <ImageUpload
+              value={currentMedia}
+              onChange={(media) => {
+                if (onMediaChange) {
+                  onMediaChange(media);
+                }
+                form.setValue('mediaUuid', media?.uuid || undefined);
+              }}
+              disabled={loading}
+            />
+          </FormItem>
 
           <div className="grid grid-cols-2 gap-4">
             <FormField

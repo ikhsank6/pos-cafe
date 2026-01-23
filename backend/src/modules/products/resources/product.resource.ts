@@ -22,6 +22,8 @@ export class ProductResource {
     media: {
         uuid: string;
         path: string;
+        filename: string;
+        originalName: string;
     } | null;
 
     constructor(product: any) {
@@ -49,7 +51,9 @@ export class ProductResource {
 
         this.media = product.media ? {
             uuid: product.media.uuid,
-            path: product.media.path,
+            path: `/upload/images/${product.media.uuid}`,
+            filename: product.media.filename,
+            originalName: product.media.originalName,
         } : null;
     }
 
