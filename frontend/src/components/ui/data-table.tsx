@@ -790,45 +790,115 @@ export function DataTable<T>({
               <p>Showing <span className="font-semibold text-foreground">{data.length}</span> items</p>
             )}
           </div>
-          <div className="flex items-center gap-3 order-1 sm:order-2">
-            <div className="flex items-center gap-1.5">
-              <Button 
-                variant="outline" 
-                size="icon"
-                className="h-8 w-8 bg-background shadow-none" 
-                disabled={currentPage <= 1 || loading}
-                onClick={() => onPageChange?.(currentPage - 1)}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              
-              <div className="flex items-center justify-center min-w-[32px] h-8 px-2 bg-primary text-primary-foreground font-bold rounded-md text-xs shadow-sm shadow-primary/20">
-                {currentPage}
-              </div>
-              
-              <Button 
-                variant="outline" 
-                size="icon"
-                className="h-8 w-8 bg-background shadow-none" 
-                disabled={currentPage >= totalPages || loading}
-                onClick={() => onPageChange?.(currentPage + 1)}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+          <div className="flex items-center gap-2 order-1 sm:order-2">
+            {/* Previous Button */}
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="h-8 px-2 text-muted-foreground hover:text-foreground" 
+              disabled={currentPage <= 1 || loading}
+              onClick={() => onPageChange?.(currentPage - 1)}
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Previous
+            </Button>
+            
+            {/* Page Numbers */}
+            <div className="flex items-center gap-1">
+              {(() => {
+                const pages: (number | 'ellipsis')[] = [];
+                const showPages = 5; // Max pages to show
+                
+                if (totalPages <= showPages) {
+                  // Show all pages
+                  for (let i = 1; i <= totalPages; i++) {
+                    pages.push(i);
+                  }
+                } else {
+                  // Always show first page
+                  pages.push(1);
+                  
+                  if (currentPage > 3) {
+                    pages.push('ellipsis');
+                  }
+                  
+                  // Show pages around current
+                  const start = Math.max(2, currentPage - 1);
+                  const end = Math.min(totalPages - 1, currentPage + 1);
+                  
+                  for (let i = start; i <= end; i++) {
+                    if (!pages.includes(i)) {
+                      pages.push(i);
+                    }
+                  }
+                  
+                  if (currentPage < totalPages - 2) {
+                    pages.push('ellipsis');
+                  }
+                  
+                  // Always show last page
+                  if (!pages.includes(totalPages)) {
+                    pages.push(totalPages);
+                  }
+                }
+                
+                return pages.map((page, idx) => {
+                  if (page === 'ellipsis') {
+                    return (
+                      <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">
+                        ...
+                      </span>
+                    );
+                  }
+                  
+                  const isActive = page === currentPage;
+                  return (
+                    <Button
+                      key={page}
+                      variant={isActive ? "default" : "ghost"}
+                      size="icon"
+                      className={cn(
+                        "h-8 w-8 text-sm font-medium",
+                        isActive 
+                          ? "bg-primary text-primary-foreground shadow-sm" 
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      )}
+                      disabled={loading}
+                      onClick={() => onPageChange?.(page)}
+                    >
+                      {page}
+                    </Button>
+                  );
+                });
+              })()}
             </div>
             
-            <div className="h-8 w-px bg-border mx-1" />
+            {/* Next Button */}
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="h-8 px-2 text-muted-foreground hover:text-foreground" 
+              disabled={currentPage >= totalPages || loading}
+              onClick={() => onPageChange?.(currentPage + 1)}
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
             
+            <div className="h-6 w-px bg-border mx-2" />
+            
+            {/* Go to Page */}
             <div className="flex items-center gap-2">
-              <span className="text-xs whitespace-nowrap">Go to</span>
+              <span className="text-xs whitespace-nowrap text-muted-foreground">Go to</span>
               <Input
-                className="h-8 w-12 px-1 text-center bg-background focus-visible:ring-1"
+                className="h-8 w-14 px-2 text-center bg-background focus-visible:ring-1"
                 value={goToPage}
+                placeholder={String(currentPage)}
                 onChange={(e) => setGoToPage(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleGoToPage()}
                 disabled={loading}
               />
-              <span className="text-xs whitespace-nowrap">of {totalPages}</span>
+              <span className="text-xs whitespace-nowrap text-muted-foreground">of {totalPages}</span>
             </div>
           </div>
         </div>
