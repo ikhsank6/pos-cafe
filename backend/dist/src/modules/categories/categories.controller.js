@@ -46,7 +46,7 @@ let CategoriesController = class CategoriesController {
 exports.CategoriesController = CategoriesController;
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'CASHIER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get all categories with pagination' }),
     (0, swagger_1.ApiQuery)({ name: 'isActive', required: false, type: Boolean }),
     __param(0, (0, common_1.Query)()),
@@ -57,7 +57,7 @@ __decorate([
 ], CategoriesController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':uuid'),
-    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'CASHIER'),
     (0, swagger_1.ApiOperation)({ summary: 'Get category by UUID' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Category UUID' }),
     __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),

@@ -15,7 +15,7 @@ export class CategoriesController {
     constructor(private readonly categoriesService: CategoriesService) { }
 
     @Get()
-    @Roles('Admin', 'OWNER', 'MANAGER')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER')
     @ApiOperation({ summary: 'Get all categories with pagination' })
     @ApiQuery({ name: 'isActive', required: false, type: Boolean })
     async findAll(
@@ -27,7 +27,7 @@ export class CategoriesController {
     }
 
     @Get(':uuid')
-    @Roles('Admin', 'OWNER', 'MANAGER')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER')
     @ApiOperation({ summary: 'Get category by UUID' })
     @ApiParam({ name: 'uuid', description: 'Category UUID' })
     async findOne(@Param('uuid', ParseUUIDPipe) uuid: string) {

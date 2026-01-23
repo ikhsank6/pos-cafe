@@ -5,7 +5,7 @@ export declare enum ProductType {
     OTHER = "OTHER"
 }
 export declare class CreateProductDto {
-    sku: string;
+    sku?: string;
     name: string;
     description?: string;
     categoryUuid: string;

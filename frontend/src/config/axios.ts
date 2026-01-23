@@ -152,8 +152,8 @@ axiosInstance.interceptors.response.use(
     // Use centralized error message extraction
     const message = getErrorMessage(error);
 
-    // Show error toast (but not for 401 on login - that's expected for wrong credentials)
-    if (!(error.response?.status === 401 && isLoginRequest)) {
+    // Show error toast (but not for 401 on login or cancelled requests)
+    if (!(error.response?.status === 401 && isLoginRequest) && !axios.isCancel(error)) {
       toast.error(message);
     }
 

@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { orderService, type Order, type OrderStatus, type CreateOrderData } from '@/services/order.service';
+import { useNavigate } from 'react-router-dom';
+import { orderService, type Order, type OrderStatus } from '@/services/order.service';
 import { DataTable, type Column, type TableActions } from '@/components/ui/data-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { OrderFormDialog } from '@/components/order-management/orders/OrderFormDialog';
 
 const statusOptions: { value: OrderStatus; label: string; color: string }[] = [
   { value: 'pending', label: 'Pending', color: 'bg-yellow-500' },
@@ -40,6 +40,7 @@ const typeLabels: Record<string, string> = {
 };
 
 export default function OrderList() {
+  const navigate = useNavigate();
   const {
     data: orders,
     loading,
@@ -58,8 +59,6 @@ export default function OrderList() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
-  const [orderFormOpen, setOrderFormOpen] = useState(false);
-  const [submittingOrder, setSubmittingOrder] = useState(false);
 
   const handleStatusFilter = (status: string) => {
     if (status === 'all') {
@@ -92,20 +91,6 @@ export default function OrderList() {
       showError(error);
     } finally {
       setUpdatingStatus(false);
-    }
-  };
-
-  const handleCreateOrder = async (data: CreateOrderData) => {
-    setSubmittingOrder(true);
-    try {
-      await orderService.create(data);
-      showSuccess('Order berhasil dibuat');
-      setOrderFormOpen(false);
-      fetchOrders();
-    } catch (error) {
-      showError(error);
-    } finally {
-      setSubmittingOrder(false);
     }
   };
 
@@ -182,7 +167,7 @@ export default function OrderList() {
         title="Orders"
         description="Kelola pesanan pelanggan."
         headerAction={
-          <Button onClick={() => setOrderFormOpen(true)}>
+          <Button onClick={() => navigate('/admin/order-management/orders/create')}>
             <Plus className="mr-2 h-4 w-4" />
             Order Baru
           </Button>
@@ -313,13 +298,6 @@ export default function OrderList() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <OrderFormDialog
-        open={orderFormOpen}
-        onOpenChange={setOrderFormOpen}
-        onSubmit={handleCreateOrder}
-        loading={submittingOrder}
-      />
     </div>
   );
 }

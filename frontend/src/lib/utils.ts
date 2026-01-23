@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { toast } from 'sonner'
-import { AxiosError } from 'axios'
+import axios, { AxiosError } from 'axios'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -104,6 +104,7 @@ export function showSuccess(message: string, description?: string) {
  * Show error toast notification from unknown error
  */
 export function showError(error: unknown, fallbackMessage?: string) {
+  if (axios.isCancel(error)) return;
   const message = getErrorMessage(error) || fallbackMessage || 'Terjadi kesalahan';
   toast.error(message);
 }

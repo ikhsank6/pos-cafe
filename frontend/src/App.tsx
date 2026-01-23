@@ -27,6 +27,7 @@ import TableList from "@/pages/table-management/tables/TableList";
 import CustomerList from "@/pages/customer-management/customers/CustomerList";
 import DiscountList from "@/pages/discount-management/discounts/DiscountList";
 import OrderList from "@/pages/order-management/orders/OrderList";
+import CreateOrder from "@/pages/order-management/orders/create/CreateOrder";
 import TransactionList from "@/pages/transaction-management/transactions/TransactionList";
 import { useAuthStore } from "@/stores/auth.store";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -220,6 +221,14 @@ export default function App() {
               element={
                 <MenuProtectedRoute>
                   <OrderList />
+                </MenuProtectedRoute>
+              }
+            />
+            <Route
+              path="order-management/orders/create"
+              element={
+                <MenuProtectedRoute>
+                  <CreateOrder />
                 </MenuProtectedRoute>
               }
             />

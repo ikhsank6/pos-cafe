@@ -12,13 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Combobox } from '@/components/ui/combobox';
 import { z } from 'zod';
 import { type Category } from '@/services/category.service';
 
@@ -28,7 +22,6 @@ export const productFormSchema = z.object({
   description: z.string().optional(),
   price: z.coerce.number().min(0, 'Harga tidak boleh negatif'),
   stock: z.coerce.number().min(0, 'Stok tidak boleh negatif').optional(),
-  sku: z.string().optional(),
   categoryUuid: z.string().optional(),
   isActive: z.boolean().default(true),
 });
@@ -96,7 +89,19 @@ export function ProductFormDrawer({
                 <FormItem>
                   <FormLabel><RequiredLabel>Harga</RequiredLabel></FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="0" {...field} disabled={loading} />
+                    <div className="relative">
+                      <span className="absolute left-3 top-2.5 text-muted-foreground text-sm font-medium">Rp</span>
+                      <Input 
+                        placeholder="0" 
+                        className="pl-9"
+                        disabled={loading}
+                        value={field.value ? new Intl.NumberFormat('id-ID').format(field.value) : ''}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, '');
+                          field.onChange(val ? parseInt(val, 10) : 0);
+                        }}
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -117,38 +122,24 @@ export function ProductFormDrawer({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="sku"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>SKU (Opsional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Kode produk" {...field} disabled={loading} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <div className="grid grid-cols-1">
             <FormField
               control={form.control}
               name="categoryUuid"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Kategori (Opsional)</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loading}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Pilih kategori" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat.uuid} value={cat.uuid}>{cat.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Combobox
+                    options={categories.map((cat) => ({
+                      value: cat.uuid,
+                      label: cat.name,
+                    }))}
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Pilih kategori"
+                    searchPlaceholder="Cari kategori..."
+                    disabled={loading}
+                  />
                   <FormMessage />
                 </FormItem>
               )}

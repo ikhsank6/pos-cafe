@@ -54,7 +54,6 @@ export default function ProductList() {
       description: '',
       price: 0,
       stock: 0,
-      sku: '',
       categoryUuid: '',
       isActive: true,
     },
@@ -91,7 +90,6 @@ export default function ProductList() {
       description: '',
       price: 0,
       stock: 0,
-      sku: '',
       categoryUuid: '',
       isActive: true,
     });
@@ -107,8 +105,7 @@ export default function ProductList() {
       description: product.description || '',
       price: product.price,
       stock: product.stock,
-      sku: product.sku || '',
-      categoryUuid: product.categoryUuid || '',
+      categoryUuid: product.category?.uuid || '',
       isActive: product.isActive,
     });
     setDrawerMode('edit');

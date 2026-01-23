@@ -36,8 +36,8 @@ class CreateProductDto {
 }
 exports.CreateProductDto = CreateProductDto;
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: 'SKU-001', description: 'Unique product SKU' }),
-    (0, class_validator_1.IsNotEmpty)({ message: 'SKU harus diisi.' }),
+    (0, swagger_1.ApiProperty)({ example: 'SKU-001', description: 'Unique product SKU', required: false }),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateProductDto.prototype, "sku", void 0);
 __decorate([

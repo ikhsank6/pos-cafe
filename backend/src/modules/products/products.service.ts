@@ -85,13 +85,33 @@ export class ProductsService {
 
     async create(createProductDto: CreateProductDto, createdBy?: string) {
         return this.prisma.$transaction(async (prisma) => {
-            // Check SKU uniqueness
-            const existingSku = await prisma.product.findFirst({
-                where: { sku: createProductDto.sku, deletedAt: null },
-            });
+            let sku = createProductDto.sku;
 
-            if (existingSku) {
-                throw new BadRequestException('SKU sudah digunakan.');
+            // Generate SKU if not provided
+            if (!sku) {
+                const prefix = 'PRD';
+                let isUnique = false;
+                while (!isUnique) {
+                    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+                    sku = `${prefix}-${random}`;
+                    
+                    const existing = await prisma.product.findFirst({
+                        where: { sku, deletedAt: null },
+                    });
+                    
+                    if (!existing) {
+                        isUnique = true;
+                    }
+                }
+            } else {
+                // Check SKU uniqueness if provided
+                const existingSku = await prisma.product.findFirst({
+                    where: { sku, deletedAt: null },
+                });
+
+                if (existingSku) {
+                    throw new BadRequestException('SKU sudah digunakan.');
+                }
             }
 
             // Get category
@@ -117,7 +137,7 @@ export class ProductsService {
 
             const product = await prisma.product.create({
                 data: {
-                    sku: createProductDto.sku,
+                    sku: sku as string,
                     name: createProductDto.name,
                     description: createProductDto.description,
                     categoryId: category.id,

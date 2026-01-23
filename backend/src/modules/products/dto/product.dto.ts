@@ -10,9 +10,9 @@ export enum ProductType {
 }
 
 export class CreateProductDto {
-    @ApiProperty({ example: 'SKU-001', description: 'Unique product SKU' })
-    @IsNotEmpty({ message: 'SKU harus diisi.' })
-    sku: string;
+    @ApiProperty({ example: 'SKU-001', description: 'Unique product SKU', required: false })
+    @IsOptional()
+    sku?: string;
 
     @ApiProperty({ example: 'Nasi Goreng Spesial', description: 'Product name' })
     @IsNotEmpty({ message: 'nama produk harus diisi.' })
