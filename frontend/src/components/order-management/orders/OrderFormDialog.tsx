@@ -30,8 +30,8 @@ import { Badge } from '@/components/ui/badge';
 
 const orderFormSchema = z.object({
   type: z.enum(['DINE_IN', 'TAKEAWAY', 'DELIVERY']),
-  tableUuid: z.string().optional(),
-  customerUuid: z.string().optional(),
+  tableUuid: z.string().optional().or(z.literal('none')),
+  customerUuid: z.string().optional().or(z.literal('none')),
   notes: z.string().optional(),
   items: z.array(z.object({
     productUuid: z.string().min(1, 'Pilih produk'),
@@ -80,16 +80,24 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, loading }: Order
 
   const loadData = async () => {
     try {
+      console.log('[OrderFormDialog] Loading data...');
       const [resProducts, resTables, resCustomers] = await Promise.all([
         productService.getAll({ limit: 100 }),
         tableService.getAll({ limit: 100 }),
         customerService.getAll({ limit: 100 }),
       ]);
-      setProducts(resProducts.data);
-      setTables(resTables.data);
-      setCustomers(resCustomers.data);
+      
+      console.log('[OrderFormDialog] Data loaded:', {
+        products: resProducts?.data?.length,
+        tables: resTables?.data?.length,
+        customers: resCustomers?.data?.length
+      });
+
+      setProducts(resProducts?.data || []);
+      setTables(resTables?.data || []);
+      setCustomers(resCustomers?.data || []);
     } catch (error) {
-      console.error('Failed to load data', error);
+      console.error('[OrderFormDialog] Failed to load data', error);
     }
   };
 
@@ -113,16 +121,16 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, loading }: Order
     return items.reduce((acc, item) => acc + (item.price || 0) * (item.quantity || 0), 0);
   };
 
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(searchProduct.toLowerCase()) ||
+  const filteredProducts = Array.isArray(products) ? products.filter(p => 
+    p.name?.toLowerCase().includes(searchProduct.toLowerCase()) ||
     p.sku?.toLowerCase().includes(searchProduct.toLowerCase())
-  );
+  ) : [];
 
   const onFormSubmit = (data: OrderFormData) => {
     const payload: CreateOrderData = {
       type: data.type,
-      tableUuid: data.tableUuid || undefined,
-      customerUuid: data.customerUuid || undefined,
+      tableUuid: data.tableUuid === 'none' ? undefined : (data.tableUuid || undefined),
+      customerUuid: data.customerUuid === 'none' ? undefined : (data.customerUuid || undefined),
       notes: data.notes,
       items: data.items.map(item => ({
         productUuid: item.productUuid,
@@ -176,15 +184,15 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, loading }: Order
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Meja (Opsional)</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value || 'none'}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Pilih meja" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Tanpa Meja</SelectItem>
-                        {tables.map(table => (
+                        <SelectItem value="none">Tanpa Meja</SelectItem>
+                        {Array.isArray(tables) && tables.map(table => (
                           <SelectItem key={table.uuid} value={table.uuid}>
                             Meja {table.number} ({table.capacity} orang)
                           </SelectItem>
@@ -203,15 +211,15 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, loading }: Order
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Pelanggan (Opsional)</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value || 'none'}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Pilih pelanggan" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Walk-in Customer</SelectItem>
-                      {customers.map(customer => (
+                      <SelectItem value="none">Walk-in Customer</SelectItem>
+                      {Array.isArray(customers) && customers.map(customer => (
                         <SelectItem key={customer.uuid} value={customer.uuid}>
                           {customer.name} ({customer.phone})
                         </SelectItem>

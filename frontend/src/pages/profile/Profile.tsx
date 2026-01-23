@@ -53,7 +53,7 @@ export default function Profile() {
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: user?.name || '',
+      name: user?.fullName || '',
       email: user?.email || '',
     },
   });
@@ -67,7 +67,7 @@ export default function Profile() {
   useEffect(() => {
     if (user) {
       profileForm.reset({
-        name: user.name,
+        name: user.fullName,
         email: user.email,
       });
     }
@@ -204,9 +204,9 @@ export default function Profile() {
             <div className="flex flex-col items-center space-y-4">
               <div className="relative group">
                 <Avatar className="h-48 w-48 cursor-pointer border-4 border-background shadow-xl transition-all group-hover:opacity-90" onClick={handleAvatarClick}>
-                  <AvatarImage src={avatarBlobUrl} alt={user?.name} className="object-cover" />
+                  <AvatarImage src={avatarBlobUrl} alt={user?.fullName} className="object-cover" />
                   <AvatarFallback className="text-4xl font-bold bg-linear-to-br from-primary/80 to-primary text-primary-foreground">
-                    {getInitials(user?.name || '')}
+                    {getInitials(user?.fullName || '')}
                   </AvatarFallback>
                   {isAvatarLoading && (
                     <div className="absolute inset-0 flex items-center justify-center bg-background/50 rounded-full">
@@ -236,7 +236,7 @@ export default function Profile() {
                 />
               </div>
               <div className="text-center">
-                <h2 className="text-xl font-semibold">{user?.name}</h2>
+                <h2 className="text-xl font-semibold">{user?.fullName}</h2>
                 <p className="text-sm text-muted-foreground">{user?.role?.name}</p>
               </div>
             </div>
