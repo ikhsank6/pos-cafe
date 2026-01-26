@@ -175,7 +175,19 @@ export class DiscountsService {
                 }
             }
 
-            const data: any = { ...updateDiscountDto, updatedBy };
+            const data: any = { 
+                code: updateDiscountDto.code,
+                name: updateDiscountDto.name,
+                description: updateDiscountDto.description,
+                type: updateDiscountDto.type,
+                value: updateDiscountDto.value,
+                minPurchase: updateDiscountDto.minPurchase,
+                maxDiscount: updateDiscountDto.maxDiscount,
+                usageLimit: updateDiscountDto.usageLimit,
+                isActive: updateDiscountDto.isActive,
+                updatedBy 
+            };
+
             if (updateDiscountDto.startDate) {
                 data.startDate = new Date(updateDiscountDto.startDate);
             }

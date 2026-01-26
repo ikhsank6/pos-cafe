@@ -19,7 +19,7 @@ import {
 type DrawerMode = 'create' | 'edit' | 'view' | null;
 
 const formatDiscountValue = (type: DiscountType, value: number) => {
-  return type === 'percentage' ? `${value}%` : formatCurrency(value);
+  return type === 'PERCENTAGE' ? `${value}%` : formatCurrency(value);
 };
 
 export default function DiscountList() {
@@ -54,10 +54,10 @@ export default function DiscountList() {
       code: '',
       name: '',
       description: '',
-      type: 'percentage',
+      type: 'PERCENTAGE',
       value: 0,
-      minOrderAmount: undefined,
-      maxDiscountAmount: undefined,
+      minPurchase: undefined,
+      maxDiscount: undefined,
       usageLimit: undefined,
       startDate: '',
       endDate: '',
@@ -82,10 +82,10 @@ export default function DiscountList() {
       code: '',
       name: '',
       description: '',
-      type: 'percentage',
+      type: 'PERCENTAGE',
       value: 0,
-      minOrderAmount: undefined,
-      maxDiscountAmount: undefined,
+      minPurchase: undefined,
+      maxDiscount: undefined,
       usageLimit: undefined,
       startDate: '',
       endDate: '',
@@ -104,8 +104,8 @@ export default function DiscountList() {
       description: discount.description || '',
       type: discount.type,
       value: discount.value,
-      minOrderAmount: discount.minOrderAmount || undefined,
-      maxDiscountAmount: discount.maxDiscountAmount || undefined,
+      minPurchase: discount.minPurchase || undefined,
+      maxDiscount: discount.maxDiscount || undefined,
       usageLimit: discount.usageLimit || undefined,
       startDate: discount.startDate ? discount.startDate.split('T')[0] : '',
       endDate: discount.endDate ? discount.endDate.split('T')[0] : '',
@@ -180,14 +180,30 @@ export default function DiscountList() {
       key: 'value',
       header: 'Nilai',
       cell: (discount) => (
-        <Badge variant="outline" className="gap-1">
-          {discount.type === 'percentage' ? (
+        <Badge variant="outline" className="gap-1 font-semibold text-primary border-primary/20 bg-primary/5">
+          {discount.type === 'PERCENTAGE' ? (
             <Percent className="h-3 w-3" />
           ) : (
             <DollarSign className="h-3 w-3" />
           )}
           {formatDiscountValue(discount.type, discount.value)}
         </Badge>
+      ),
+    },
+    {
+      key: 'requirements',
+      header: 'Syarat & Batas',
+      cell: (discount) => (
+        <div className="flex flex-col gap-1">
+          {discount.minPurchase ? (
+            <span className="text-xs">Min: {formatCurrency(discount.minPurchase)}</span>
+          ) : (
+            <span className="text-xs text-muted-foreground">-</span>
+          )}
+          {discount.type === 'PERCENTAGE' && discount.maxDiscount && (
+            <span className="text-xs text-green-600 font-medium">Max: {formatCurrency(discount.maxDiscount)}</span>
+          )}
+        </div>
       ),
     },
     {

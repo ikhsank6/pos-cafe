@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/form';
 import { Combobox } from '@/components/ui/combobox';
 import { ImageUpload, type Media } from '@/components/ui/image-upload';
+import { MoneyInput } from '@/components/ui/money-input';
 import { z } from 'zod';
 import { type Category } from '@/services/category.service';
 
@@ -110,19 +111,12 @@ export function ProductFormDrawer({
                 <FormItem>
                   <FormLabel><RequiredLabel>Harga</RequiredLabel></FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <span className="absolute left-3 top-2.5 text-muted-foreground text-sm font-medium">Rp</span>
-                      <Input 
-                        placeholder="0" 
-                        className="pl-9"
-                        disabled={loading}
-                        value={field.value ? new Intl.NumberFormat('id-ID').format(field.value) : ''}
-                        onChange={(e) => {
-                          const val = e.target.value.replace(/\D/g, '');
-                          field.onChange(val ? parseInt(val, 10) : 0);
-                        }}
-                      />
-                    </div>
+                    <MoneyInput 
+                      placeholder="Rp 0" 
+                      value={field.value}
+                      onValueChange={(values) => field.onChange(values.floatValue || 0)}
+                      disabled={loading}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

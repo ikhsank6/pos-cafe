@@ -19,6 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { MoneyInput } from '@/components/ui/money-input';
+import { DatePicker } from '@/components/ui/date-picker';
+import { parseISO, format } from 'date-fns';
 import { z } from 'zod';
 
 // Schema exported for use in parent component
@@ -26,10 +29,10 @@ export const discountFormSchema = z.object({
   code: z.string().min(1, 'Kode diskon wajib diisi').toUpperCase(),
   name: z.string().min(1, 'Nama diskon wajib diisi'),
   description: z.string().optional(),
-  type: z.enum(['percentage', 'fixed']),
+  type: z.enum(['PERCENTAGE', 'FIXED_AMOUNT']),
   value: z.coerce.number().min(0, 'Nilai tidak boleh negatif'),
-  minOrderAmount: z.coerce.number().min(0).optional(),
-  maxDiscountAmount: z.coerce.number().min(0).optional(),
+  minPurchase: z.coerce.number().min(0).optional(),
+  maxDiscount: z.coerce.number().min(0).optional(),
   usageLimit: z.coerce.number().min(0).optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
@@ -118,8 +121,8 @@ export function DiscountFormDrawer({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="percentage">Persentase (%)</SelectItem>
-                      <SelectItem value="fixed">Nominal (Rp)</SelectItem>
+                      <SelectItem value="PERCENTAGE">Persentase (%)</SelectItem>
+                      <SelectItem value="FIXED_AMOUNT">Nominal (Rp)</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -133,7 +136,22 @@ export function DiscountFormDrawer({
                 <FormItem>
                   <FormLabel><RequiredLabel>Nilai</RequiredLabel></FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="0" {...field} disabled={loading} />
+                    {form.watch('type') === 'FIXED_AMOUNT' ? (
+                      <MoneyInput 
+                        placeholder="Rp 0" 
+                        value={field.value}
+                        onValueChange={(values) => field.onChange(values.floatValue || 0)}
+                        disabled={loading}
+                      />
+                    ) : (
+                      <Input 
+                        type="number" 
+                        placeholder="0" 
+                        {...field} 
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        disabled={loading} 
+                      />
+                    )}
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -144,12 +162,17 @@ export function DiscountFormDrawer({
           <div className="grid grid-cols-2 gap-4">
             <FormField
               control={form.control}
-              name="minOrderAmount"
+              name="minPurchase"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Min. Order (Opsional)</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="0" {...field} disabled={loading} />
+                    <MoneyInput 
+                      placeholder="Rp 0" 
+                      value={field.value}
+                      onValueChange={(values) => field.onChange(values.floatValue || 0)}
+                      disabled={loading}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -157,12 +180,17 @@ export function DiscountFormDrawer({
             />
             <FormField
               control={form.control}
-              name="maxDiscountAmount"
+              name="maxDiscount"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Max. Diskon (Opsional)</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="0" {...field} disabled={loading} />
+                    <MoneyInput 
+                      placeholder="Rp 0" 
+                      value={field.value}
+                      onValueChange={(values) => field.onChange(values.floatValue || 0)}
+                      disabled={loading}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -192,7 +220,11 @@ export function DiscountFormDrawer({
                 <FormItem>
                   <FormLabel>Tanggal Mulai (Opsional)</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} disabled={loading} />
+                    <DatePicker 
+                      date={field.value ? parseISO(field.value) : undefined} 
+                      setDate={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : undefined)} 
+                      disabled={loading} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -205,7 +237,11 @@ export function DiscountFormDrawer({
                 <FormItem>
                   <FormLabel>Tanggal Berakhir (Opsional)</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} disabled={loading} />
+                    <DatePicker 
+                      date={field.value ? parseISO(field.value) : undefined} 
+                      setDate={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : undefined)} 
+                      disabled={loading} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

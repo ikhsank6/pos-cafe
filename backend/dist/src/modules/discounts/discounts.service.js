@@ -150,7 +150,18 @@ let DiscountsService = class DiscountsService {
                     throw new common_1.BadRequestException('Kode diskon sudah digunakan.');
                 }
             }
-            const data = { ...updateDiscountDto, updatedBy };
+            const data = {
+                code: updateDiscountDto.code,
+                name: updateDiscountDto.name,
+                description: updateDiscountDto.description,
+                type: updateDiscountDto.type,
+                value: updateDiscountDto.value,
+                minPurchase: updateDiscountDto.minPurchase,
+                maxDiscount: updateDiscountDto.maxDiscount,
+                usageLimit: updateDiscountDto.usageLimit,
+                isActive: updateDiscountDto.isActive,
+                updatedBy
+            };
             if (updateDiscountDto.startDate) {
                 data.startDate = new Date(updateDiscountDto.startDate);
             }

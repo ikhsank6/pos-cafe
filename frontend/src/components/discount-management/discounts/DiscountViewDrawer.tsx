@@ -12,7 +12,7 @@ interface DiscountViewDrawerProps {
 }
 
 const formatDiscountValue = (type: DiscountType, value: number) => {
-  return type === 'percentage' ? `${value}%` : formatCurrency(value);
+  return type === 'PERCENTAGE' ? `${value}%` : formatCurrency(value);
 };
 
 export function DiscountViewDrawer({ open, onOpenChange, discount, onEdit }: DiscountViewDrawerProps) {
@@ -29,12 +29,12 @@ export function DiscountViewDrawer({ open, onOpenChange, discount, onEdit }: Dis
     >
       <FieldDisplay label="Nama" value={discount.name} />
       <FieldDisplay label="Kode" value={<span className="font-mono">{discount.code}</span>} />
-      <FieldDisplay label="Tipe" value={discount.type === 'percentage' ? 'Persentase' : 'Nominal'} />
+      <FieldDisplay label="Tipe" value={discount.type === 'PERCENTAGE' ? 'Persentase' : 'Nominal'} />
       <FieldDisplay 
         label="Nilai" 
         value={
           <Badge variant="outline" className="gap-1">
-            {discount.type === 'percentage' ? (
+            {discount.type === 'PERCENTAGE' ? (
               <Percent className="h-3 w-3" />
             ) : (
               <DollarSign className="h-3 w-3" />
@@ -43,8 +43,8 @@ export function DiscountViewDrawer({ open, onOpenChange, discount, onEdit }: Dis
           </Badge>
         } 
       />
-      <FieldDisplay label="Min. Order" value={discount.minOrderAmount ? formatCurrency(discount.minOrderAmount) : '-'} />
-      <FieldDisplay label="Max. Diskon" value={discount.maxDiscountAmount ? formatCurrency(discount.maxDiscountAmount) : '-'} />
+      <FieldDisplay label="Min. Order" value={discount.minPurchase ? formatCurrency(discount.minPurchase) : '-'} />
+      <FieldDisplay label="Max. Diskon" value={discount.maxDiscount ? formatCurrency(discount.maxDiscount) : '-'} />
       <FieldDisplay label="Penggunaan" value={`${discount.usedCount}${discount.usageLimit ? `/${discount.usageLimit}` : ''}`} />
       <FieldDisplay label="Tanggal Mulai" value={discount.startDate ? formatDateTime(discount.startDate) : '-'} />
       <FieldDisplay label="Tanggal Berakhir" value={discount.endDate ? formatDateTime(discount.endDate) : '-'} />

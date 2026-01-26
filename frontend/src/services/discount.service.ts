@@ -1,7 +1,7 @@
 import api from '@/config/axios';
 import { createQueryParams } from '@/lib/utils';
 
-export type DiscountType = 'percentage' | 'fixed';
+export type DiscountType = 'PERCENTAGE' | 'FIXED_AMOUNT';
 
 export interface Discount {
   uuid: string;
@@ -10,8 +10,8 @@ export interface Discount {
   description?: string;
   type: DiscountType;
   value: number;
-  minOrderAmount?: number;
-  maxDiscountAmount?: number;
+  minPurchase?: number;
+  maxDiscount?: number;
   usageLimit?: number;
   usedCount: number;
   startDate?: string;
@@ -27,8 +27,8 @@ export interface DiscountFormData {
   description?: string;
   type: DiscountType;
   value: number;
-  minOrderAmount?: number;
-  maxDiscountAmount?: number;
+  minPurchase?: number;
+  maxDiscount?: number;
   usageLimit?: number;
   startDate?: string;
   endDate?: string;

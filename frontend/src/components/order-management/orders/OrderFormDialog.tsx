@@ -25,7 +25,7 @@ import { type CreateOrderData } from '@/services/order.service';
 import { productService, type Product } from '@/services/product.service';
 import { tableService, type Table } from '@/services/table.service';
 import { customerService, type Customer } from '@/services/customer.service';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, showSuccess, showErrorMessage } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 
 const orderFormSchema = z.object({
@@ -33,6 +33,7 @@ const orderFormSchema = z.object({
   tableUuid: z.string().optional().or(z.literal('none')),
   customerUuid: z.string().optional().or(z.literal('none')),
   notes: z.string().optional(),
+  discountCode: z.string().optional(),
   items: z.array(z.object({
     productUuid: z.string().min(1, 'Pilih produk'),
     quantity: z.number().min(1, 'Min 1'),
@@ -51,11 +52,15 @@ interface OrderFormDialogProps {
   loading: boolean;
 }
 
+import { discountService, type Discount } from '@/services/discount.service';
+
 export function OrderFormDialog({ open, onOpenChange, onSubmit, loading }: OrderFormDialogProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchProduct, setSearchProduct] = useState('');
+  const [appliedDiscount, setAppliedDiscount] = useState<Discount | null>(null);
+  const [validatingDiscount, setValidatingDiscount] = useState(false);
 
   const form = useForm<OrderFormData>({
     resolver: zodResolver(orderFormSchema),
@@ -75,6 +80,7 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, loading }: Order
       loadData();
     } else {
       form.reset();
+      setAppliedDiscount(null);
     }
   }, [open]);
 
@@ -116,9 +122,49 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, loading }: Order
     }
   };
 
+  const handleApplyDiscount = async () => {
+    const code = form.getValues('discountCode');
+    if (!code) return;
+
+    setValidatingDiscount(true);
+    try {
+      const subtotal = calculateSubtotal();
+      const result = await discountService.validateCode(code, subtotal);
+      
+      if (result.valid && result.discount) {
+        setAppliedDiscount(result.discount);
+        showSuccess(`Voucher ${result.discount.name} berhasil digunakan`);
+      } else {
+        setAppliedDiscount(null);
+        showErrorMessage(result.message || 'Voucher tidak valid');
+      }
+    } catch (error) {
+      showErrorMessage('Gagal memvalidasi voucher');
+      setAppliedDiscount(null);
+    } finally {
+      setValidatingDiscount(false);
+    }
+  };
+
   const calculateSubtotal = () => {
     const items = form.watch('items') || [];
     return items.reduce((acc, item) => acc + (item.price || 0) * (item.quantity || 0), 0);
+  };
+
+  const calculateDiscountAmount = (subtotal: number) => {
+    if (!appliedDiscount) return 0;
+    
+    let amount = 0;
+    if (appliedDiscount.type === 'PERCENTAGE') {
+      amount = (subtotal * appliedDiscount.value) / 100;
+      if (appliedDiscount.maxDiscount && amount > appliedDiscount.maxDiscount) {
+        amount = appliedDiscount.maxDiscount;
+      }
+    } else {
+      amount = appliedDiscount.value;
+    }
+    
+    return amount;
   };
 
   const filteredProducts = Array.isArray(products) ? products.filter(p => 
@@ -132,6 +178,7 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, loading }: Order
       tableUuid: data.tableUuid === 'none' ? undefined : (data.tableUuid || undefined),
       customerUuid: data.customerUuid === 'none' ? undefined : (data.customerUuid || undefined),
       notes: data.notes,
+      discountCode: data.discountCode,
       items: data.items.map(item => ({
         productUuid: item.productUuid,
         quantity: item.quantity,
@@ -230,6 +277,45 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, loading }: Order
                 </FormItem>
               )}
             />
+
+            <div className="space-y-2 border rounded-lg p-3 bg-primary/5 border-primary/20">
+              <FormLabel className="text-xs font-semibold uppercase tracking-wider text-primary">Voucher Diskon</FormLabel>
+              <div className="flex gap-2">
+                <FormField
+                  control={form.control}
+                  name="discountCode"
+                  render={({ field }) => (
+                    <FormItem className="flex-1 space-y-0">
+                      <FormControl>
+                        <Input 
+                          placeholder="Masukkan kode promo" 
+                          {...field} 
+                          className="h-9 text-sm uppercase"
+                          onChange={(e) => {
+                            field.onChange(e.target.value.toUpperCase());
+                            if (appliedDiscount) setAppliedDiscount(null);
+                          }}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="h-9 px-3 text-xs font-medium border-primary/30 hover:bg-primary/10 hover:text-primary transition-colors"
+                  onClick={handleApplyDiscount}
+                  disabled={validatingDiscount || !form.watch('discountCode')}
+                >
+                  {validatingDiscount ? '...' : (appliedDiscount ? 'Cek Lagi' : 'Gunakan')}
+                </Button>
+              </div>
+              {appliedDiscount && (
+                <p className="text-[10px] text-green-600 font-medium">
+                  Voucher <strong>{appliedDiscount.code}</strong> berhasil dipasang!
+                </p>
+              )}
+            </div>
 
             <div className="border rounded-lg p-4 space-y-4">
               <div className="flex items-center gap-2 mb-2">
@@ -340,11 +426,22 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, loading }: Order
                   <span className="text-muted-foreground">Subtotal</span>
                   <span>{formatCurrency(calculateSubtotal())}</span>
                 </div>
-                <div className="flex justify-between font-bold text-lg">
-                  <span>Total Est.</span>
-                  <span className="text-primary">{formatCurrency(calculateSubtotal() * 1.1)}</span>
+                {appliedDiscount && (
+                  <div className="flex justify-between text-sm text-green-600 animate-in fade-in slide-in-from-top-1 duration-300">
+                    <span className="flex items-center gap-1">Diskon ({appliedDiscount.name})</span>
+                    <span>-{formatCurrency(calculateDiscountAmount(calculateSubtotal()))}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>Pajak (10%)</span>
+                  <span>{formatCurrency((calculateSubtotal() - calculateDiscountAmount(calculateSubtotal())) * 0.1)}</span>
                 </div>
-                <p className="text-[10px] text-muted-foreground text-right italic">*Belum termasuk diskon dan pajak final</p>
+                <div className="flex justify-between font-bold text-xl border-t pt-2 mt-2">
+                  <span>Total</span>
+                  <div className="text-right">
+                    <span className="text-primary">{formatCurrency((calculateSubtotal() - calculateDiscountAmount(calculateSubtotal())) * 1.1)}</span>
+                  </div>
+                </div>
               </div>
               
               <FormField
