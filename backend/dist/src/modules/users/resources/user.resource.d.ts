@@ -17,7 +17,7 @@ export declare class UserResource {
         code: string;
         description?: string;
     }[];
-    role: {
+    activeRole: {
         uuid: string;
         name: string;
         code: string;
@@ -44,11 +44,11 @@ export declare class UserResource {
             code: string;
             description?: string;
         }[];
-        role: {
+        activeRole: {
             uuid: string;
             name: string;
             code: string;
             description?: string;
-        };
+        } | null;
     };
 }

@@ -11,9 +11,15 @@ export interface AuthUser {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  role: {
+  roles: {
     uuid: string;
     name: string;
+    code: string;
+  }[];
+  activeRole: {
+    uuid: string;
+    name: string;
+    code: string;
   } | null;
 }
 
@@ -180,8 +186,8 @@ export const useAuthStore = create<AuthState>()(
         const state = get();
         const { menus, user } = state;
 
-        // Admin has access to everything
-        if (user?.role?.name === 'Admin') {
+        // Admin/Owner has access to everything
+        if (user?.activeRole?.code === 'ADMIN' || user?.activeRole?.code === 'OWNER') {
           return true;
         }
 

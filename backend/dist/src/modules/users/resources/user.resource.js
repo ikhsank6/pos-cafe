@@ -15,7 +15,7 @@ class UserResource {
     createdBy;
     updatedBy;
     roles;
-    role;
+    activeRole;
     constructor(user) {
         this.uuid = user.uuid;
         this.username = user.username;
@@ -35,7 +35,17 @@ class UserResource {
             code: userRole.role.code,
             description: userRole.role.description,
         })) || [];
-        this.role = this.roles[0] || null;
+        if (user.activeRole) {
+            this.activeRole = {
+                uuid: user.activeRole.uuid,
+                name: user.activeRole.name,
+                code: user.activeRole.code,
+                description: user.activeRole.description,
+            };
+        }
+        else {
+            this.activeRole = this.roles[0] || null;
+        }
     }
     static collection(users) {
         return users.map((user) => new UserResource(user));
@@ -55,7 +65,7 @@ class UserResource {
             createdBy: this.createdBy,
             updatedBy: this.updatedBy,
             roles: this.roles,
-            role: this.roles[0] || null,
+            activeRole: this.activeRole,
         };
     }
 }

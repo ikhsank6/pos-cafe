@@ -32,6 +32,11 @@ export declare class AuthService {
                     name: string;
                     code: string;
                 }[];
+                activeRole: {
+                    uuid: string;
+                    name: string;
+                    code: string;
+                } | null;
             };
             menus: any[];
             refreshToken?: string | undefined;
@@ -130,6 +135,7 @@ export declare class AuthService {
         verificationToken: string | null;
         resetPasswordToken: string | null;
         resetPasswordExpires: Date | null;
+        activeRoleId: number | null;
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
@@ -155,6 +161,72 @@ export declare class AuthService {
                 name: string;
                 code: string;
             }[];
+            activeRole: {
+                uuid: string;
+                name: string;
+                code: string;
+            } | null;
+        };
+    }>;
+    switchRole(userId: number, roleUuid: string): Promise<{
+        message: string;
+        data: {
+            user: {
+                uuid: string;
+                username: string;
+                email: string;
+                fullName: string;
+                avatar: string | null;
+                isActive: boolean;
+                verifiedAt: Date | null;
+                createdAt: Date;
+                updatedAt: Date;
+                roles: {
+                    uuid: string;
+                    name: string;
+                    code: string;
+                }[];
+                activeRole: {
+                    uuid: string;
+                    name: string;
+                    code: string;
+                };
+            };
+            menus: ({
+                children: {
+                    id: number;
+                    uuid: string;
+                    isActive: boolean;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    deletedAt: Date | null;
+                    createdBy: string | null;
+                    updatedBy: string | null;
+                    deletedBy: string | null;
+                    name: string;
+                    order: number;
+                    path: string | null;
+                    icon: string | null;
+                    parentId: number | null;
+                }[];
+            } & {
+                id: number;
+                uuid: string;
+                isActive: boolean;
+                createdAt: Date;
+                updatedAt: Date;
+                deletedAt: Date | null;
+                createdBy: string | null;
+                updatedBy: string | null;
+                deletedBy: string | null;
+                name: string;
+                order: number;
+                path: string | null;
+                icon: string | null;
+                parentId: number | null;
+            })[];
+            refreshToken?: string | undefined;
+            accessToken: string;
         };
     }>;
 }

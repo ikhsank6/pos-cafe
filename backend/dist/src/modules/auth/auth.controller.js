@@ -55,6 +55,9 @@ let AuthController = class AuthController {
     async revokeAllTokens(req) {
         return this.authService.revokeAllTokens(req.user.sub);
     }
+    async switchRole(req, body) {
+        return this.authService.switchRole(req.user.sub, body.roleUuid);
+    }
 };
 exports.AuthController = AuthController;
 __decorate([
@@ -206,6 +209,18 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "revokeAllTokens", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('switch-role'),
+    (0, common_1.HttpCode)(200),
+    (0, swagger_1.ApiBearerAuth)('JWT-auth'),
+    (0, swagger_1.ApiOperation)({ summary: 'Switch active role', description: 'Switch currently active role' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "switchRole", null);
 exports.AuthController = AuthController = __decorate([
     (0, swagger_1.ApiTags)('1. System : Authentication'),
     (0, common_1.UseGuards)(auth_throttler_guard_1.AuthThrottlerGuard),

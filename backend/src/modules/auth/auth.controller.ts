@@ -140,5 +140,13 @@ export class AuthController {
   async revokeAllTokens(@Request() req) {
     return this.authService.revokeAllTokens(req.user.sub);
   }
+  @UseGuards(JwtAuthGuard)
+  @Post('switch-role')
+  @HttpCode(200)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Switch active role', description: 'Switch currently active role' })
+  async switchRole(@Request() req, @Body() body: { roleUuid: string }) {
+    return this.authService.switchRole(req.user.sub, body.roleUuid);
+  }
 }
 

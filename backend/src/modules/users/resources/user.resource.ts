@@ -17,7 +17,7 @@ export class UserResource {
     code: string;
     description?: string;
   }[];
-  role: {
+  activeRole: {
     uuid: string;
     name: string;
     code: string;
@@ -45,7 +45,18 @@ export class UserResource {
       code: userRole.role.code,
       description: userRole.role.description,
     })) || [];
-    this.role = this.roles[0] || null;
+
+    // Set active role from database or default to first role
+    if (user.activeRole) {
+      this.activeRole = {
+        uuid: user.activeRole.uuid,
+        name: user.activeRole.name,
+        code: user.activeRole.code,
+        description: user.activeRole.description,
+      };
+    } else {
+      this.activeRole = this.roles[0] || null;
+    }
   }
 
   static collection(users: any[]): UserResource[] {
@@ -67,7 +78,7 @@ export class UserResource {
       createdBy: this.createdBy,
       updatedBy: this.updatedBy,
       roles: this.roles,
-      role: this.roles[0] || null,
+      activeRole: this.activeRole,
     };
   }
 }

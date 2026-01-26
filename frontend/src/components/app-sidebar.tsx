@@ -72,6 +72,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuthStore, type AuthMenu } from "@/stores/auth.store"
 import { authService } from "@/services/auth.service"
 import { profileService } from "@/services/profile.service"
+import { showSuccess, showErrorMessage } from '@/lib/utils';
 
 // Icon map for dynamic menu rendering
 const iconMap: Record<string, LucideIcon> = {
@@ -136,6 +137,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const handleLogout = () => {
     authService.logout()
     navigate("/login")
+  }
+
+  const handleSwitchRole = async (roleUuid: string) => {
+    try {
+      await authService.switchRole(roleUuid);
+      showSuccess('Berhasil Switch role');
+      navigate("/admin/dashboard");
+    } catch (error) {
+      console.error("Failed to switch role:", error);
+      showErrorMessage('Gagal Switch role');
+    }
   }
 
   return (
@@ -243,7 +255,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">{user?.fullName}</span>
                     <div className="flex items-center gap-1">
-                      <span className="truncate text-[10px] bg-primary/10 text-primary px-1 rounded font-medium">{user?.role?.name}</span>
+                      <span className="truncate text-[10px] bg-primary/10 text-primary px-1 rounded font-medium">{user?.activeRole?.name}</span>
                       <span className="truncate text-[10px] text-muted-foreground">{user?.email}</span>
                     </div>
                   </div>
@@ -265,7 +277,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="truncate font-semibold">{user?.fullName}</span>
                       <div className="flex items-center gap-1">
-                        <span className="truncate text-[10px] bg-primary/10 text-primary px-1 rounded font-medium">{user?.role?.name}</span>
+                        <span className="truncate text-[10px] bg-primary/10 text-primary px-1 rounded font-medium">{user?.activeRole?.name}</span>
                         <span className="truncate text-[10px] text-muted-foreground">{user?.email}</span>
                       </div>
                     </div>
@@ -283,6 +295,31 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     Notifications
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
+
+                {user?.roles && user.roles.length > 1 && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel className="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Pilih Role</DropdownMenuLabel>
+                    <DropdownMenuGroup>
+                      {user.roles.map((role) => (
+                        <DropdownMenuItem 
+                          key={role.uuid}
+                          onSelect={() => handleSwitchRole(role.uuid)}
+                          disabled={role.uuid === user.activeRole?.uuid}
+                          className="flex items-center justify-between"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Shield className="size-4" />
+                            <span>{role.name}</span>
+                          </div>
+                          {role.uuid === user.activeRole?.uuid && (
+                            <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                          )}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuGroup>
+                  </>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
                   onSelect={(e) => {

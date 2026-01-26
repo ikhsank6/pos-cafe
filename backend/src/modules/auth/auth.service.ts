@@ -34,7 +34,8 @@ export class AuthService {
         userRoles: {
           include: { role: true },
           where: { deletedAt: null }
-        }
+        },
+        activeRole: true
       },
     });
 
@@ -58,6 +59,28 @@ export class AuthService {
 
     // Get first role for menu access (primary role)
     const primaryRole = user.userRoles?.[0]?.role;
+    // Determine active role
+    let activeRole = user.activeRole ? {
+      uuid: user.activeRole.uuid,
+      name: user.activeRole.name,
+      code: user.activeRole.code,
+    } : null;
+
+    if (!activeRole && user.userRoles?.length > 0) {
+      const firstRole = user.userRoles[0].role;
+      activeRole = {
+        uuid: firstRole.uuid,
+        name: firstRole.name,
+        code: firstRole.code,
+      };
+
+      // Persist the default active role
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { activeRoleId: firstRole.id }
+      });
+    }
+
     const roles = user.userRoles?.map(ur => ({
       uuid: ur.role.uuid,
       name: ur.role.name,
@@ -70,7 +93,8 @@ export class AuthService {
       email: user.email,
       fullName: user.fullName,
       avatar: user.avatar,
-      roles: roles
+      roles: roles,
+      activeRole: activeRole
     };
     const accessToken = this.jwtService.sign(payload);
 
@@ -104,6 +128,7 @@ export class AuthService {
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
           roles: roles,
+          activeRole: activeRole,
         },
         menus,
       },
@@ -519,7 +544,8 @@ export class AuthService {
         userRoles: {
           include: { role: true },
           where: { deletedAt: null }
-        }
+        },
+        activeRole: true
       },
     });
 
@@ -532,6 +558,12 @@ export class AuthService {
       name: ur.role.name,
       code: ur.role.code,
     })) || [];
+
+    const activeRole = user.activeRole ? {
+      uuid: user.activeRole.uuid,
+      name: user.activeRole.name,
+      code: user.activeRole.code,
+    } : null;
 
     return {
       message: 'Success',
@@ -547,6 +579,102 @@ export class AuthService {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
         roles: roles,
+        activeRole: activeRole,
+      },
+    };
+  }
+
+  async switchRole(userId: number, roleUuid: string) {
+    const user = await this.prisma.user.findFirst({
+      where: { id: userId, deletedAt: null },
+      include: {
+        userRoles: {
+          include: { role: true },
+          where: { deletedAt: null }
+        }
+      }
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User tidak ditemukan.');
+    }
+
+    // Check if user has the requested role
+    const userRole = user.userRoles.find(ur => ur.role.uuid === roleUuid);
+    if (!userRole) {
+      throw new BadRequestException('Role tidak valid atau tidak dimiliki user.');
+    }
+
+    // Update active role in database
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: { activeRoleId: userRole.role.id },
+      include: {
+        activeRole: true,
+        userRoles: {
+          include: { role: true },
+          where: { deletedAt: null }
+        }
+      }
+    });
+
+    const roles = updatedUser.userRoles.map(ur => ({
+      uuid: ur.role.uuid,
+      name: ur.role.name,
+      code: ur.role.code,
+    }));
+
+    if (!updatedUser.activeRole) {
+      throw new BadRequestException('Gagal memproses role aktif.');
+    }
+
+    const activeRole = {
+      uuid: updatedUser.activeRole.uuid,
+      name: updatedUser.activeRole.name,
+      code: updatedUser.activeRole.code,
+    };
+
+    // Generate new access token
+    const payload = {
+      sub: updatedUser.id,
+      uuid: updatedUser.uuid,
+      email: updatedUser.email,
+      fullName: updatedUser.fullName,
+      avatar: updatedUser.avatar,
+      roles: roles,
+      activeRole: activeRole
+    };
+    const accessToken = this.jwtService.sign(payload);
+
+    // Get menus for new role
+    const menusResult = await this.menuAccessService.getAccessibleMenus(updatedUser.activeRole.id);
+    const menus = menusResult.data;
+
+    // Generate new refresh token if enabled
+    let refreshToken: string | undefined;
+    if (this.refreshTokenEnabled) {
+      refreshToken = await this.generateRefreshToken(userId);
+    }
+
+    return {
+      message: 'Role berhasil diganti',
+      data: {
+        accessToken,
+        ...(this.refreshTokenEnabled && { refreshToken }),
+        user: {
+          uuid: updatedUser.uuid,
+          username: updatedUser.username,
+          email: updatedUser.email,
+          fullName: updatedUser.fullName,
+          avatar: updatedUser.avatar || null,
+          isActive: updatedUser.isActive,
+          verifiedAt: updatedUser.verifiedAt,
+          createdAt: updatedUser.createdAt,
+          updatedAt: updatedUser.updatedAt,
+          roles: roles,
+          activeRole: activeRole,
+        },
+        menus,
       },
     };
   }

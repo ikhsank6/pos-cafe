@@ -78,7 +78,8 @@ let AuthService = class AuthService {
                 userRoles: {
                     include: { role: true },
                     where: { deletedAt: null }
-                }
+                },
+                activeRole: true
             },
         });
         if (!user) {
@@ -95,6 +96,23 @@ let AuthService = class AuthService {
             throw new common_1.UnauthorizedException('Akun tidak aktif.');
         }
         const primaryRole = user.userRoles?.[0]?.role;
+        let activeRole = user.activeRole ? {
+            uuid: user.activeRole.uuid,
+            name: user.activeRole.name,
+            code: user.activeRole.code,
+        } : null;
+        if (!activeRole && user.userRoles?.length > 0) {
+            const firstRole = user.userRoles[0].role;
+            activeRole = {
+                uuid: firstRole.uuid,
+                name: firstRole.name,
+                code: firstRole.code,
+            };
+            await this.prisma.user.update({
+                where: { id: user.id },
+                data: { activeRoleId: firstRole.id }
+            });
+        }
         const roles = user.userRoles?.map(ur => ({
             uuid: ur.role.uuid,
             name: ur.role.name,
@@ -106,7 +124,8 @@ let AuthService = class AuthService {
             email: user.email,
             fullName: user.fullName,
             avatar: user.avatar,
-            roles: roles
+            roles: roles,
+            activeRole: activeRole
         };
         const accessToken = this.jwtService.sign(payload);
         let menus = [];
@@ -134,6 +153,7 @@ let AuthService = class AuthService {
                     createdAt: user.createdAt,
                     updatedAt: user.updatedAt,
                     roles: roles,
+                    activeRole: activeRole,
                 },
                 menus,
             },
@@ -462,7 +482,8 @@ let AuthService = class AuthService {
                 userRoles: {
                     include: { role: true },
                     where: { deletedAt: null }
-                }
+                },
+                activeRole: true
             },
         });
         if (!user) {
@@ -473,6 +494,11 @@ let AuthService = class AuthService {
             name: ur.role.name,
             code: ur.role.code,
         })) || [];
+        const activeRole = user.activeRole ? {
+            uuid: user.activeRole.uuid,
+            name: user.activeRole.name,
+            code: user.activeRole.code,
+        } : null;
         return {
             message: 'Success',
             data: {
@@ -487,6 +513,86 @@ let AuthService = class AuthService {
                 createdAt: user.createdAt,
                 updatedAt: user.updatedAt,
                 roles: roles,
+                activeRole: activeRole,
+            },
+        };
+    }
+    async switchRole(userId, roleUuid) {
+        const user = await this.prisma.user.findFirst({
+            where: { id: userId, deletedAt: null },
+            include: {
+                userRoles: {
+                    include: { role: true },
+                    where: { deletedAt: null }
+                }
+            }
+        });
+        if (!user) {
+            throw new common_1.UnauthorizedException('User tidak ditemukan.');
+        }
+        const userRole = user.userRoles.find(ur => ur.role.uuid === roleUuid);
+        if (!userRole) {
+            throw new common_1.BadRequestException('Role tidak valid atau tidak dimiliki user.');
+        }
+        const updatedUser = await this.prisma.user.update({
+            where: { id: userId },
+            data: { activeRoleId: userRole.role.id },
+            include: {
+                activeRole: true,
+                userRoles: {
+                    include: { role: true },
+                    where: { deletedAt: null }
+                }
+            }
+        });
+        const roles = updatedUser.userRoles.map(ur => ({
+            uuid: ur.role.uuid,
+            name: ur.role.name,
+            code: ur.role.code,
+        }));
+        if (!updatedUser.activeRole) {
+            throw new common_1.BadRequestException('Gagal memproses role aktif.');
+        }
+        const activeRole = {
+            uuid: updatedUser.activeRole.uuid,
+            name: updatedUser.activeRole.name,
+            code: updatedUser.activeRole.code,
+        };
+        const payload = {
+            sub: updatedUser.id,
+            uuid: updatedUser.uuid,
+            email: updatedUser.email,
+            fullName: updatedUser.fullName,
+            avatar: updatedUser.avatar,
+            roles: roles,
+            activeRole: activeRole
+        };
+        const accessToken = this.jwtService.sign(payload);
+        const menusResult = await this.menuAccessService.getAccessibleMenus(updatedUser.activeRole.id);
+        const menus = menusResult.data;
+        let refreshToken;
+        if (this.refreshTokenEnabled) {
+            refreshToken = await this.generateRefreshToken(userId);
+        }
+        return {
+            message: 'Role berhasil diganti',
+            data: {
+                accessToken,
+                ...(this.refreshTokenEnabled && { refreshToken }),
+                user: {
+                    uuid: updatedUser.uuid,
+                    username: updatedUser.username,
+                    email: updatedUser.email,
+                    fullName: updatedUser.fullName,
+                    avatar: updatedUser.avatar || null,
+                    isActive: updatedUser.isActive,
+                    verifiedAt: updatedUser.verifiedAt,
+                    createdAt: updatedUser.createdAt,
+                    updatedAt: updatedUser.updatedAt,
+                    roles: roles,
+                    activeRole: activeRole,
+                },
+                menus,
             },
         };
     }

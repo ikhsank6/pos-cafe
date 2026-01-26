@@ -15,7 +15,8 @@ export class ProfileService {
         userRoles: {
           include: { role: true },
           where: { deletedAt: null }
-        }
+        },
+        activeRole: true
       },
     });
 
@@ -55,7 +56,8 @@ export class ProfileService {
         userRoles: {
           include: { role: true },
           where: { deletedAt: null }
-        }
+        },
+        activeRole: true
       },
     });
 
@@ -108,7 +110,8 @@ export class ProfileService {
         userRoles: {
           include: { role: true },
           where: { deletedAt: null }
-        }
+        },
+        activeRole: true
       },
     });
 
@@ -134,7 +137,8 @@ export class ProfileService {
         userRoles: {
           include: { role: true },
           where: { deletedAt: null }
-        }
+        },
+        activeRole: true
       },
     });
 

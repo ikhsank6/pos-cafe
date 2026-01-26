@@ -134,6 +134,23 @@ export const authService = {
     const response = await api.post('/auth/revoke-all-tokens') as any;
     return response;
   },
+
+  switchRole: async (roleUuid: string): Promise<AuthResponse> => {
+    const response = await api.post('/auth/switch-role', { roleUuid }) as any;
+    const authData = response?.data as AuthResponse;
+
+    if (authData?.accessToken) {
+      // Update state with new role and menus
+      useAuthStore.getState().setAuth(
+        authData.user,
+        authData.accessToken,
+        authData.menus || [],
+        env.REFRESH_TOKEN_ENABLED ? authData.refreshToken : undefined,
+      );
+    }
+
+    return authData;
+  },
 };
 
 
