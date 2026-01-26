@@ -62,7 +62,7 @@ export default function UserList() {
     defaultValues: {
       name: '',
       email: '',
-      roleUuid: '',
+      roleUuids: [],
       isActive: false,
     },
   });
@@ -110,7 +110,7 @@ export default function UserList() {
     form.reset({
       name: '',
       email: '',
-      roleUuid: '',
+      roleUuids: [],
       isActive: false,
     });
     setSelectedUser(null);
@@ -124,7 +124,7 @@ export default function UserList() {
       name: user.name,
       email: user.email,
       password: '',
-      roleUuid: user.role?.uuid || '',
+      roleUuids: user.roles?.map(r => r.uuid) || [],
       isActive: user.isActive,
     });
     setDrawerMode('edit');
@@ -214,9 +214,21 @@ export default function UserList() {
       key: 'role',
       header: 'Role',
       cell: (user) => (
-        <Badge variant="outline" className="font-normal capitalize">
-          {user.role?.name || 'User'}
-        </Badge>
+        <div className="flex flex-wrap gap-1">
+          {user.roles?.length > 0 ? (
+            user.roles.map((role) => (
+              <Badge 
+                key={role.uuid} 
+                variant={role.uuid === user.activeRole?.uuid ? 'default' : 'outline'} 
+                className="font-normal capitalize text-[10px]"
+              >
+                {role.name}
+              </Badge>
+            ))
+          ) : (
+            <Badge variant="outline" className="font-normal capitalize">User</Badge>
+          )}
+        </div>
       ),
     },
     {

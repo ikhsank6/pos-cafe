@@ -17,7 +17,7 @@ class CreateUserDto {
     email;
     phone;
     password;
-    roleUuid;
+    roleUuids;
     isActive;
 }
 exports.CreateUserDto = CreateUserDto;
@@ -47,10 +47,11 @@ __decorate([
     __metadata("design:type", String)
 ], CreateUserDto.prototype, "password", void 0);
 __decorate([
-    (0, class_validator_1.IsNotEmpty)({ message: 'roleUuid harus diisi.' }),
-    (0, class_validator_1.IsUUID)('4', { message: 'roleUuid harus berupa UUID yang valid.' }),
-    __metadata("design:type", String)
-], CreateUserDto.prototype, "roleUuid", void 0);
+    (0, class_validator_1.IsArray)({ message: 'roleUuids harus berupa array.' }),
+    (0, class_validator_1.ArrayMinSize)(1, { message: 'Minimal pilih 1 role.' }),
+    (0, class_validator_1.IsUUID)('4', { each: true, message: 'Setiap role harus berupa UUID yang valid.' }),
+    __metadata("design:type", Array)
+], CreateUserDto.prototype, "roleUuids", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsBoolean)({ message: 'isActive harus boolean.' }),
@@ -59,10 +60,11 @@ __decorate([
 class UpdateUserDto {
     username;
     fullName;
+    name;
     email;
     phone;
     password;
-    roleUuid;
+    roleUuids;
     isActive;
 }
 exports.UpdateUserDto = UpdateUserDto;
@@ -76,6 +78,11 @@ __decorate([
     (0, class_validator_1.IsNotEmpty)({ message: 'nama lengkap harus diisi.' }),
     __metadata("design:type", String)
 ], UpdateUserDto.prototype, "fullName", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNotEmpty)({ message: 'nama harus diisi.' }),
+    __metadata("design:type", String)
+], UpdateUserDto.prototype, "name", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEmail)({}, { message: 'format email tidak valid.' }),
@@ -95,9 +102,10 @@ __decorate([
 ], UpdateUserDto.prototype, "password", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsUUID)('4', { message: 'roleUuid harus berupa UUID yang valid.' }),
-    __metadata("design:type", String)
-], UpdateUserDto.prototype, "roleUuid", void 0);
+    (0, class_validator_1.IsArray)({ message: 'roleUuids harus berupa array.' }),
+    (0, class_validator_1.IsUUID)('4', { each: true, message: 'Setiap role harus berupa UUID yang valid.' }),
+    __metadata("design:type", Array)
+], UpdateUserDto.prototype, "roleUuids", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsBoolean)({ message: 'isActive harus boolean.' }),

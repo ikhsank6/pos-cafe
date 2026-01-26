@@ -43,7 +43,8 @@ export class UsersService {
           userRoles: {
             include: { role: true },
             where: { deletedAt: null }
-          }
+          },
+          activeRole: true
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -65,7 +66,8 @@ export class UsersService {
         userRoles: {
           include: { role: true },
           where: { deletedAt: null }
-        }
+        },
+        activeRole: true
       },
     });
 
@@ -83,7 +85,8 @@ export class UsersService {
         userRoles: {
           include: { role: true },
           where: { deletedAt: null }
-        }
+        },
+        activeRole: true
       },
     });
 
@@ -114,20 +117,22 @@ export class UsersService {
         throw new BadRequestException('Username sudah terdaftar.');
       }
 
-      // Handle roleUuid -> roleId conversion
-      let roleId: number | undefined;
-      if (createUserDto.roleUuid) {
-        const role = await prisma.role.findFirst({
-          where: { uuid: createUserDto.roleUuid, deletedAt: null },
-        });
-        if (!role) {
-          throw new BadRequestException('Role tidak ditemukan.');
+      // Handle roleUuids -> roleIds conversion
+      const roleIds: number[] = [];
+      if (createUserDto.roleUuids && createUserDto.roleUuids.length > 0) {
+        for (const roleUuid of createUserDto.roleUuids) {
+          const role = await prisma.role.findFirst({
+            where: { uuid: roleUuid, deletedAt: null },
+          });
+          if (!role) {
+            throw new BadRequestException(`Role dengan UUID ${roleUuid} tidak ditemukan.`);
+          }
+          roleIds.push(role.id);
         }
-        roleId = role.id;
       }
 
-      if (!roleId) {
-        throw new BadRequestException('roleUuid harus diisi.');
+      if (roleIds.length === 0) {
+        throw new BadRequestException('roleUuids harus diisi minimal 1 role.');
       }
 
       const isActive = createUserDto.isActive ?? false;
@@ -147,28 +152,32 @@ export class UsersService {
       // Generate verification token if user is not active
       const verificationToken = !isActive ? uuidv4() : null;
 
-      const { roleUuid, ...dataWithoutRoleUuid } = createUserDto;
+      const { roleUuids, ...dataWithoutRoleUuids } = createUserDto;
       const user = await prisma.user.create({
         data: {
-          username: dataWithoutRoleUuid.username,
-          email: dataWithoutRoleUuid.email,
-          fullName: dataWithoutRoleUuid.fullName,
-          phone: dataWithoutRoleUuid.phone,
+          username: dataWithoutRoleUuids.username,
+          email: dataWithoutRoleUuids.email,
+          fullName: dataWithoutRoleUuids.fullName,
+          phone: dataWithoutRoleUuids.phone,
           password: hashedPassword,
           isActive,
           // Only set verifiedAt if user is active
           verifiedAt: isActive ? new Date() : null,
           verificationToken,
+          // Set first role as active role
+          activeRoleId: roleIds[0],
         },
       });
 
-      // Create UserRole relation
-      await prisma.userRole.create({
-        data: {
-          userId: user.id,
-          roleId: roleId,
-        },
-      });
+      // Create UserRole relations for all roles
+      for (const roleId of roleIds) {
+        await prisma.userRole.create({
+          data: {
+            userId: user.id,
+            roleId: roleId,
+          },
+        });
+      }
 
       // Get user with roles
       const userWithRoles = await prisma.user.findFirst({
@@ -177,7 +186,8 @@ export class UsersService {
           userRoles: {
             include: { role: true },
             where: { deletedAt: null }
-          }
+          },
+          activeRole: true
         },
       });
 
@@ -229,46 +239,60 @@ export class UsersService {
         }
       }
 
-      // Handle roleUuid -> roleId conversion
-      let roleId: number | undefined;
-      if (updateUserDto.roleUuid) {
-        const role = await prisma.role.findFirst({
-          where: { uuid: updateUserDto.roleUuid, deletedAt: null },
-        });
-        if (!role) {
-          throw new BadRequestException('Role tidak ditemukan.');
+      // Handle roleUuids -> roleIds conversion
+      const roleIds: number[] = [];
+      if (updateUserDto.roleUuids && updateUserDto.roleUuids.length > 0) {
+        for (const roleUuid of updateUserDto.roleUuids) {
+          const role = await prisma.role.findFirst({
+            where: { uuid: roleUuid, deletedAt: null },
+          });
+          if (!role) {
+            throw new BadRequestException(`Role dengan UUID ${roleUuid} tidak ditemukan.`);
+          }
+          roleIds.push(role.id);
         }
-        roleId = role.id;
       }
 
-      const { roleUuid, ...dataWithoutRoleUuid } = updateUserDto;
-      const data: any = { ...dataWithoutRoleUuid };
+      const { roleUuids, ...dataWithoutRoleUuids } = updateUserDto;
+      const data: any = { ...dataWithoutRoleUuids };
+
+      // Map 'name' to 'fullName' if provided (frontend sends 'name')
+      if ((updateUserDto as any).name) {
+        data.fullName = (updateUserDto as any).name;
+        delete data.name;
+      }
 
       if (updateUserDto.password) {
         data.password = await hashPassword(updateUserDto.password);
+      }
+
+      // Update UserRoles if roleIds is provided
+      if (roleIds.length > 0) {
+        // Hard delete existing roles (to avoid unique constraint issues)
+        await prisma.userRole.deleteMany({
+          where: { userId: existing.id },
+        });
+
+        // Create new role assignments
+        for (const roleId of roleIds) {
+          await prisma.userRole.create({
+            data: {
+              userId: existing.id,
+              roleId: roleId,
+            },
+          });
+        }
+
+        // Update activeRoleId if current activeRole is not in new roleIds
+        if (!roleIds.includes(existing.activeRoleId ?? -1)) {
+          data.activeRoleId = roleIds[0];
+        }
       }
 
       const user = await prisma.user.update({
         where: { id: existing.id },
         data,
       });
-
-      // Update UserRole if roleId is provided
-      if (roleId) {
-        // Remove existing roles
-        await prisma.userRole.updateMany({
-          where: { userId: existing.id, deletedAt: null },
-          data: { deletedAt: new Date() },
-        });
-
-        // Create new role assignment
-        await prisma.userRole.create({
-          data: {
-            userId: existing.id,
-            roleId: roleId,
-          },
-        });
-      }
 
       // Get user with roles
       const userWithRoles = await prisma.user.findFirst({
@@ -277,7 +301,8 @@ export class UsersService {
           userRoles: {
             include: { role: true },
             where: { deletedAt: null }
-          }
+          },
+          activeRole: true
         },
       });
 

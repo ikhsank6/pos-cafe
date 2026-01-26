@@ -68,6 +68,7 @@ export class UserResource {
       uuid: this.uuid,
       username: this.username,
       fullName: this.fullName,
+      name: this.fullName, // Frontend expects 'name'
       email: this.email,
       phone: this.phone,
       avatar: this.avatar,

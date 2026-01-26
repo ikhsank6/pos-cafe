@@ -1,6 +1,7 @@
 import { ViewDialog, FieldDisplay } from '@/components/ui/form-dialog';
 import { type User } from '@/services/user.service';
 import { formatDate } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 interface UserViewDrawerProps {
   open: boolean;
@@ -20,9 +21,29 @@ export function UserViewDrawer({ open, onOpenChange, user, onEdit }: UserViewDra
       description="Informasi detail user."
       onEdit={() => onEdit(user)}
     >
-      <FieldDisplay label="Nama" value={user.name} />
+      <FieldDisplay label="Nama" value={user.name || user.fullName as any || '-'} />
       <FieldDisplay label="Email" value={user.email} />
-      <FieldDisplay label="Role" value={user.role?.name} />
+      <FieldDisplay 
+        label="Role" 
+        value={
+          <div className="flex flex-wrap gap-1 mt-1">
+            {user.roles && user.roles.length > 0 ? (
+              user.roles.map((role) => (
+                <Badge 
+                  key={role.uuid} 
+                  variant={role.uuid === user.activeRole?.uuid ? 'default' : 'outline'}
+                  className="capitalize text-[10px]"
+                >
+                  {role.name}
+                  {role.uuid === user.activeRole?.uuid && " (Aktif)"}
+                </Badge>
+              ))
+            ) : (
+              '-'
+            )}
+          </div>
+        } 
+      />
       <FieldDisplay 
         label="Status" 
         value={

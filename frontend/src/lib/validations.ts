@@ -11,7 +11,7 @@ export const userFormSchema = z.object({
     .regex(/[^A-Za-z0-9]/, "Password harus mengandung minimal 1 karakter spesial")
     .optional()
     .or(z.literal("")),
-  roleUuid: z.string().min(1, "Role harus dipilih"),
+  roleUuids: z.array(z.string()).min(1, "Minimal pilih 1 role"),
   isActive: z.boolean(),
 })
 

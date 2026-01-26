@@ -29,6 +29,7 @@ export declare class UserResource {
         uuid: string;
         username: string;
         fullName: string;
+        name: string;
         email: string;
         phone: string | null;
         avatar: string | null;

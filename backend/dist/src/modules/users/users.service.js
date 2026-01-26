@@ -46,7 +46,8 @@ let UsersService = class UsersService {
                     userRoles: {
                         include: { role: true },
                         where: { deletedAt: null }
-                    }
+                    },
+                    activeRole: true
                 },
                 orderBy: { createdAt: 'desc' },
             }),
@@ -61,7 +62,8 @@ let UsersService = class UsersService {
                 userRoles: {
                     include: { role: true },
                     where: { deletedAt: null }
-                }
+                },
+                activeRole: true
             },
         });
         if (!user) {
@@ -76,7 +78,8 @@ let UsersService = class UsersService {
                 userRoles: {
                     include: { role: true },
                     where: { deletedAt: null }
-                }
+                },
+                activeRole: true
             },
         });
         if (!user) {
@@ -98,18 +101,20 @@ let UsersService = class UsersService {
             if (existingUsername) {
                 throw new common_1.BadRequestException('Username sudah terdaftar.');
             }
-            let roleId;
-            if (createUserDto.roleUuid) {
-                const role = await prisma.role.findFirst({
-                    where: { uuid: createUserDto.roleUuid, deletedAt: null },
-                });
-                if (!role) {
-                    throw new common_1.BadRequestException('Role tidak ditemukan.');
+            const roleIds = [];
+            if (createUserDto.roleUuids && createUserDto.roleUuids.length > 0) {
+                for (const roleUuid of createUserDto.roleUuids) {
+                    const role = await prisma.role.findFirst({
+                        where: { uuid: roleUuid, deletedAt: null },
+                    });
+                    if (!role) {
+                        throw new common_1.BadRequestException(`Role dengan UUID ${roleUuid} tidak ditemukan.`);
+                    }
+                    roleIds.push(role.id);
                 }
-                roleId = role.id;
             }
-            if (!roleId) {
-                throw new common_1.BadRequestException('roleUuid harus diisi.');
+            if (roleIds.length === 0) {
+                throw new common_1.BadRequestException('roleUuids harus diisi minimal 1 role.');
             }
             const isActive = createUserDto.isActive ?? false;
             let temporaryPassword = undefined;
@@ -122,32 +127,36 @@ let UsersService = class UsersService {
             }
             const hashedPassword = await (0, hash_util_1.hashPassword)(passwordToHash);
             const verificationToken = !isActive ? (0, uuid_1.v4)() : null;
-            const { roleUuid, ...dataWithoutRoleUuid } = createUserDto;
+            const { roleUuids, ...dataWithoutRoleUuids } = createUserDto;
             const user = await prisma.user.create({
                 data: {
-                    username: dataWithoutRoleUuid.username,
-                    email: dataWithoutRoleUuid.email,
-                    fullName: dataWithoutRoleUuid.fullName,
-                    phone: dataWithoutRoleUuid.phone,
+                    username: dataWithoutRoleUuids.username,
+                    email: dataWithoutRoleUuids.email,
+                    fullName: dataWithoutRoleUuids.fullName,
+                    phone: dataWithoutRoleUuids.phone,
                     password: hashedPassword,
                     isActive,
                     verifiedAt: isActive ? new Date() : null,
                     verificationToken,
+                    activeRoleId: roleIds[0],
                 },
             });
-            await prisma.userRole.create({
-                data: {
-                    userId: user.id,
-                    roleId: roleId,
-                },
-            });
+            for (const roleId of roleIds) {
+                await prisma.userRole.create({
+                    data: {
+                        userId: user.id,
+                        roleId: roleId,
+                    },
+                });
+            }
             const userWithRoles = await prisma.user.findFirst({
                 where: { id: user.id },
                 include: {
                     userRoles: {
                         include: { role: true },
                         where: { deletedAt: null }
-                    }
+                    },
+                    activeRole: true
                 },
             });
             if (!isActive && verificationToken) {
@@ -191,44 +200,55 @@ let UsersService = class UsersService {
                     throw new common_1.BadRequestException('Username sudah digunakan.');
                 }
             }
-            let roleId;
-            if (updateUserDto.roleUuid) {
-                const role = await prisma.role.findFirst({
-                    where: { uuid: updateUserDto.roleUuid, deletedAt: null },
-                });
-                if (!role) {
-                    throw new common_1.BadRequestException('Role tidak ditemukan.');
+            const roleIds = [];
+            if (updateUserDto.roleUuids && updateUserDto.roleUuids.length > 0) {
+                for (const roleUuid of updateUserDto.roleUuids) {
+                    const role = await prisma.role.findFirst({
+                        where: { uuid: roleUuid, deletedAt: null },
+                    });
+                    if (!role) {
+                        throw new common_1.BadRequestException(`Role dengan UUID ${roleUuid} tidak ditemukan.`);
+                    }
+                    roleIds.push(role.id);
                 }
-                roleId = role.id;
             }
-            const { roleUuid, ...dataWithoutRoleUuid } = updateUserDto;
-            const data = { ...dataWithoutRoleUuid };
+            const { roleUuids, ...dataWithoutRoleUuids } = updateUserDto;
+            const data = { ...dataWithoutRoleUuids };
+            if (updateUserDto.name) {
+                data.fullName = updateUserDto.name;
+                delete data.name;
+            }
             if (updateUserDto.password) {
                 data.password = await (0, hash_util_1.hashPassword)(updateUserDto.password);
+            }
+            if (roleIds.length > 0) {
+                await prisma.userRole.deleteMany({
+                    where: { userId: existing.id },
+                });
+                for (const roleId of roleIds) {
+                    await prisma.userRole.create({
+                        data: {
+                            userId: existing.id,
+                            roleId: roleId,
+                        },
+                    });
+                }
+                if (!roleIds.includes(existing.activeRoleId ?? -1)) {
+                    data.activeRoleId = roleIds[0];
+                }
             }
             const user = await prisma.user.update({
                 where: { id: existing.id },
                 data,
             });
-            if (roleId) {
-                await prisma.userRole.updateMany({
-                    where: { userId: existing.id, deletedAt: null },
-                    data: { deletedAt: new Date() },
-                });
-                await prisma.userRole.create({
-                    data: {
-                        userId: existing.id,
-                        roleId: roleId,
-                    },
-                });
-            }
             const userWithRoles = await prisma.user.findFirst({
                 where: { id: user.id },
                 include: {
                     userRoles: {
                         include: { role: true },
                         where: { deletedAt: null }
-                    }
+                    },
+                    activeRole: true
                 },
             });
             return { message: 'User berhasil diupdate.', data: new user_resource_1.UserResource(userWithRoles) };

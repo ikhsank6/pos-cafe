@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsEmail, IsOptional, IsBoolean, MinLength, IsUUID, Matches } from 'class-validator';
+import { IsNotEmpty, IsEmail, IsOptional, IsBoolean, MinLength, IsUUID, Matches, IsArray, ArrayMinSize } from 'class-validator';
 
 export class CreateUserDto {
   @IsNotEmpty({ message: 'username harus diisi.' })
@@ -21,9 +21,10 @@ export class CreateUserDto {
   })
   password?: string;
 
-  @IsNotEmpty({ message: 'roleUuid harus diisi.' })
-  @IsUUID('4', { message: 'roleUuid harus berupa UUID yang valid.' })
-  roleUuid: string;
+  @IsArray({ message: 'roleUuids harus berupa array.' })
+  @ArrayMinSize(1, { message: 'Minimal pilih 1 role.' })
+  @IsUUID('4', { each: true, message: 'Setiap role harus berupa UUID yang valid.' })
+  roleUuids: string[];
 
   @IsOptional()
   @IsBoolean({ message: 'isActive harus boolean.' })
@@ -40,6 +41,10 @@ export class UpdateUserDto {
   fullName?: string;
 
   @IsOptional()
+  @IsNotEmpty({ message: 'nama harus diisi.' })
+  name?: string;
+
+  @IsOptional()
   @IsEmail({}, { message: 'format email tidak valid.' })
   email?: string;
 
@@ -54,8 +59,9 @@ export class UpdateUserDto {
   password?: string;
 
   @IsOptional()
-  @IsUUID('4', { message: 'roleUuid harus berupa UUID yang valid.' })
-  roleUuid?: string;
+  @IsArray({ message: 'roleUuids harus berupa array.' })
+  @IsUUID('4', { each: true, message: 'Setiap role harus berupa UUID yang valid.' })
+  roleUuids?: string[];
 
   @IsOptional()
   @IsBoolean({ message: 'isActive harus boolean.' })

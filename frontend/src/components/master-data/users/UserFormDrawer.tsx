@@ -2,6 +2,7 @@ import { type UseFormReturn } from 'react-hook-form';
 import { FormDialog } from '@/components/ui/form-dialog';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form,
   FormControl,
@@ -11,9 +12,9 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Combobox } from '@/components/ui/combobox';
 import { type UserFormData } from '@/lib/validations';
 import { type Role } from '@/services/role.service';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface UserFormDrawerProps {
   open: boolean;
@@ -41,12 +42,6 @@ export function UserFormDrawer({
   loading,
   roles 
 }: UserFormDrawerProps) {
-  // Transform roles to combobox options
-  const roleOptions = roles.map((role) => ({
-    value: role.uuid,
-    label: role.name,
-  }));
-
   return (
     <FormDialog
       open={open}
@@ -94,21 +89,58 @@ export function UserFormDrawer({
 
           <FormField
             control={form.control}
-            name="roleUuid"
-            render={({ field }) => (
+            name="roleUuids"
+            render={() => (
               <FormItem>
                 <FormLabel><RequiredLabel>Role</RequiredLabel></FormLabel>
-                <FormControl>
-                  <Combobox
-                    options={roleOptions}
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="Pilih role"
-                    searchPlaceholder="Cari role..."
-                    emptyText="Role tidak ditemukan."
-                    disabled={loading}
-                  />
-                </FormControl>
+                <FormDescription className="text-xs">
+                  User dapat memiliki lebih dari satu role. Role pertama akan menjadi role aktif default.
+                </FormDescription>
+                <ScrollArea className="h-[140px] rounded-md border p-3 mt-2">
+                  <div className="space-y-3">
+                    {roles.map((role) => (
+                      <FormField
+                        key={role.uuid}
+                        control={form.control}
+                        name="roleUuids"
+                        render={({ field }) => {
+                          return (
+                            <FormItem
+                              key={role.uuid}
+                              className="flex flex-row items-start space-x-3 space-y-0"
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes(role.uuid)}
+                                  onCheckedChange={(checked) => {
+                                    return checked
+                                      ? field.onChange([...field.value, role.uuid])
+                                      : field.onChange(
+                                          field.value?.filter(
+                                            (value: string) => value !== role.uuid
+                                          )
+                                        )
+                                  }}
+                                  disabled={loading}
+                                />
+                              </FormControl>
+                              <div className="space-y-1 leading-none">
+                                <FormLabel className="text-sm font-medium cursor-pointer">
+                                  {role.name}
+                                </FormLabel>
+                                {role.description && (
+                                  <p className="text-[10px] text-muted-foreground">
+                                    {role.description}
+                                  </p>
+                                )}
+                              </div>
+                            </FormItem>
+                          )
+                        }}
+                      />
+                    ))}
+                  </div>
+                </ScrollArea>
                 <FormMessage />
               </FormItem>
             )}

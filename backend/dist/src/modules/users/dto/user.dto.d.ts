@@ -4,15 +4,16 @@ export declare class CreateUserDto {
     email: string;
     phone?: string;
     password?: string;
-    roleUuid: string;
+    roleUuids: string[];
     isActive?: boolean;
 }
 export declare class UpdateUserDto {
     username?: string;
     fullName?: string;
+    name?: string;
     email?: string;
     phone?: string;
     password?: string;
-    roleUuid?: string;
+    roleUuids?: string[];
     isActive?: boolean;
 }

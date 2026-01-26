@@ -55,6 +55,7 @@ class UserResource {
             uuid: this.uuid,
             username: this.username,
             fullName: this.fullName,
+            name: this.fullName,
             email: this.email,
             phone: this.phone,
             avatar: this.avatar,

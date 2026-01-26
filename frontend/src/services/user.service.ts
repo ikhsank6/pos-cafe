@@ -5,15 +5,23 @@ import type { TableFilters } from '@/stores/table.store';
 export interface User {
   uuid: string;
   name: string;
+  fullName: string;
   email: string;
   avatar: string | null;
   isActive: boolean;
   verifiedAt: string | null;
   createdAt: string;
   updatedAt: string;
-  role: {
+  roles: {
     uuid: string;
     name: string;
+    code: string;
+    description?: string;
+  }[];
+  activeRole: {
+    uuid: string;
+    name: string;
+    code: string;
     description?: string;
   } | null;
   createdBy?: string | null;
@@ -25,7 +33,7 @@ export interface CreateUserData {
   name: string;
   email: string;
   password?: string;
-  roleUuid: string;
+  roleUuids: string[];
   isActive?: boolean;
 }
 
@@ -33,7 +41,7 @@ export interface UpdateUserData {
   name?: string;
   email?: string;
   password?: string;
-  roleUuid?: string;
+  roleUuids?: string[];
   isActive?: boolean;
 }
 
