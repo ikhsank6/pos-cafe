@@ -41,6 +41,9 @@ let OrdersController = class OrdersController {
     async updateStatus(uuid, updateStatusDto, req) {
         return this.ordersService.updateStatus(uuid, updateStatusDto, req.user?.uuid);
     }
+    async cancel(uuid, reason, req) {
+        return this.ordersService.updateStatus(uuid, { status: order_dto_1.OrderStatus.CANCELLED }, req.user?.uuid);
+    }
     async updateItemStatus(uuid, itemUuid, updateStatusDto, req) {
         return this.ordersService.updateItemStatus(uuid, itemUuid, updateStatusDto, req.user?.uuid);
     }
@@ -94,7 +97,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], OrdersController.prototype, "create", null);
 __decorate([
-    (0, common_1.Put)(':uuid/status'),
+    (0, common_1.Patch)(':uuid/status'),
     (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'CASHIER', 'WAITER', 'KITCHEN'),
     (0, swagger_1.ApiOperation)({ summary: 'Update order status' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Order UUID' }),
@@ -106,7 +109,19 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], OrdersController.prototype, "updateStatus", null);
 __decorate([
-    (0, common_1.Put)(':uuid/items/:itemUuid/status'),
+    (0, common_1.Patch)(':uuid/cancel'),
+    (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'CASHIER', 'WAITER'),
+    (0, swagger_1.ApiOperation)({ summary: 'Cancel order' }),
+    (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Order UUID' }),
+    __param(0, (0, common_1.Param)('uuid', common_1.ParseUUIDPipe)),
+    __param(1, (0, common_1.Body)('reason')),
+    __param(2, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:returntype", Promise)
+], OrdersController.prototype, "cancel", null);
+__decorate([
+    (0, common_1.Patch)(':uuid/items/:itemUuid/status'),
     (0, roles_decorator_1.Roles)('Admin', 'OWNER', 'MANAGER', 'KITCHEN'),
     (0, swagger_1.ApiOperation)({ summary: 'Update order item status' }),
     (0, swagger_1.ApiParam)({ name: 'uuid', description: 'Order UUID' }),

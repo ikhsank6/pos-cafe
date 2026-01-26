@@ -32,6 +32,10 @@ export declare class OrdersController {
         message: string;
         data: import("./resources/order.resource").OrderResource;
     }>;
+    cancel(uuid: string, reason: string, req: any): Promise<{
+        message: string;
+        data: import("./resources/order.resource").OrderResource;
+    }>;
     updateItemStatus(uuid: string, itemUuid: string, updateStatusDto: UpdateOrderItemStatusDto, req: any): Promise<{
         message: string;
         data: import("./resources/order.resource").OrderResource;

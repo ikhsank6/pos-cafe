@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Param, Query, UseGuards, ParseUUIDPipe, HttpCode, Request } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Body, Param, Query, UseGuards, ParseUUIDPipe, HttpCode, Request } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto, UpdateOrderStatusDto, UpdateOrderItemStatusDto, AddOrderItemsDto, OrderType, OrderStatus } from './dto/order.dto';
@@ -59,7 +59,7 @@ export class OrdersController {
         return this.ordersService.create(createOrderDto, req.user?.uuid);
     }
 
-    @Put(':uuid/status')
+    @Patch(':uuid/status')
     @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER', 'WAITER', 'KITCHEN')
     @ApiOperation({ summary: 'Update order status' })
     @ApiParam({ name: 'uuid', description: 'Order UUID' })
@@ -71,7 +71,20 @@ export class OrdersController {
         return this.ordersService.updateStatus(uuid, updateStatusDto, req.user?.uuid);
     }
 
-    @Put(':uuid/items/:itemUuid/status')
+    @Patch(':uuid/cancel')
+    @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER', 'WAITER')
+    @ApiOperation({ summary: 'Cancel order' })
+    @ApiParam({ name: 'uuid', description: 'Order UUID' })
+    async cancel(
+        @Param('uuid', ParseUUIDPipe) uuid: string,
+        @Body('reason') reason: string,
+        @Request() req,
+    ) {
+        // Reuse updateStatus with CANCELLED status
+        return this.ordersService.updateStatus(uuid, { status: OrderStatus.CANCELLED }, req.user?.uuid);
+    }
+
+    @Patch(':uuid/items/:itemUuid/status')
     @Roles('Admin', 'OWNER', 'MANAGER', 'KITCHEN')
     @ApiOperation({ summary: 'Update order item status' })
     @ApiParam({ name: 'uuid', description: 'Order UUID' })

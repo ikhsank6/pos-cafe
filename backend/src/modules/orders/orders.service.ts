@@ -277,10 +277,10 @@ export class OrdersService {
 
             // Validate status transition
             const validTransitions: Record<string, string[]> = {
-                PENDING: ['CONFIRMED', 'CANCELLED'],
-                CONFIRMED: ['PREPARING', 'CANCELLED'],
-                PREPARING: ['READY', 'CANCELLED'],
-                READY: ['SERVED', 'CANCELLED'],
+                PENDING: ['CONFIRMED', 'PREPARING', 'CANCELLED'],
+                CONFIRMED: ['PREPARING', 'READY', 'CANCELLED'],
+                PREPARING: ['READY', 'SERVED', 'CANCELLED'],
+                READY: ['SERVED', 'COMPLETED', 'CANCELLED'],
                 SERVED: ['COMPLETED'],
                 COMPLETED: [],
                 CANCELLED: [],

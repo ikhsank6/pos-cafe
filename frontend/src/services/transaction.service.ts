@@ -2,8 +2,8 @@ import api from '@/config/axios';
 import { createQueryParams } from '@/lib/utils';
 import type { Order } from './order.service';
 
-export type PaymentMethod = 'cash' | 'card' | 'e_wallet' | 'bank_transfer';
-export type TransactionStatus = 'pending' | 'completed' | 'refunded' | 'failed';
+export type PaymentMethod = 'CASH' | 'DEBIT_CARD' | 'CREDIT_CARD' | 'E_WALLET' | 'QRIS' | 'BANK_TRANSFER';
+export type TransactionStatus = 'PENDING' | 'COMPLETED' | 'REFUNDED' | 'FAILED';
 
 export interface Transaction {
   uuid: string;

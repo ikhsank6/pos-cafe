@@ -17,17 +17,19 @@ import {
 } from '@/components/ui/dialog';
 
 const statusOptions: { value: TransactionStatus; label: string; color: string }[] = [
-  { value: 'pending', label: 'Pending', color: 'bg-yellow-500' },
-  { value: 'completed', label: 'Completed', color: 'bg-green-500' },
-  { value: 'refunded', label: 'Refunded', color: 'bg-red-500' },
-  { value: 'failed', label: 'Failed', color: 'bg-gray-500' },
+  { value: 'PENDING', label: 'Pending', color: 'bg-yellow-500' },
+  { value: 'COMPLETED', label: 'Completed', color: 'bg-green-500' },
+  { value: 'REFUNDED', label: 'Refunded', color: 'bg-red-500' },
+  { value: 'FAILED', label: 'Failed', color: 'bg-gray-500' },
 ];
 
 const paymentMethodLabels: Record<PaymentMethod, string> = {
-  cash: 'Tunai',
-  card: 'Kartu',
-  e_wallet: 'E-Wallet',
-  bank_transfer: 'Transfer Bank',
+  CASH: 'Tunai',
+  DEBIT_CARD: 'Kartu Debit',
+  CREDIT_CARD: 'Kartu Kredit',
+  E_WALLET: 'E-Wallet',
+  QRIS: 'QRIS',
+  BANK_TRANSFER: 'Transfer Bank',
 };
 
 export default function TransactionList() {
@@ -158,7 +160,7 @@ export default function TransactionList() {
         icon: <RotateCcw className="h-4 w-4" />,
         variant: 'ghost',
         className: 'hover:text-red-500',
-        showCondition: (transaction: Transaction) => transaction.status === 'completed',
+        showCondition: (transaction: Transaction) => transaction.status === 'COMPLETED',
       },
     ],
   };
@@ -267,7 +269,7 @@ export default function TransactionList() {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={closeDialog}>Tutup</Button>
-            {selectedTransaction?.status === 'completed' && (
+            {selectedTransaction?.status === 'COMPLETED' && (
               <Button variant="destructive" onClick={() => { closeDialog(); confirmRefund(selectedTransaction); }}>
                 <RotateCcw className="mr-2 h-4 w-4" />
                 Refund
@@ -284,7 +286,7 @@ export default function TransactionList() {
         itemName={transactionToRefund?.transactionNumber}
         onConfirm={handleRefund}
         description="Apakah Anda yakin ingin melakukan refund untuk transaksi ini? Tindakan ini tidak dapat dibatalkan."
-        confirmText="Refund"
+        confirmLabel="Refund"
       />
     </div>
   );

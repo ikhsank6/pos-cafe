@@ -2,8 +2,8 @@ import api from '@/config/axios';
 import { createQueryParams } from '@/lib/utils';
 import type { Product } from './product.service';
 
-export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'served' | 'completed' | 'cancelled';
-export type OrderItemStatus = 'pending' | 'preparing' | 'ready' | 'served' | 'cancelled';
+export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'READY' | 'SERVED' | 'COMPLETED' | 'CANCELLED';
+export type OrderItemStatus = 'PENDING' | 'PREPARING' | 'READY' | 'SERVED' | 'CANCELLED';
 export type OrderType = 'DINE_IN' | 'TAKEAWAY' | 'DELIVERY';
 
 export interface OrderItem {

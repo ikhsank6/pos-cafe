@@ -24,13 +24,13 @@ import {
 } from '@/components/ui/select';
 
 const statusOptions: { value: OrderStatus; label: string; color: string }[] = [
-  { value: 'pending', label: 'Pending', color: 'bg-yellow-500' },
-  { value: 'confirmed', label: 'Confirmed', color: 'bg-blue-500' },
-  { value: 'preparing', label: 'Preparing', color: 'bg-orange-500' },
-  { value: 'ready', label: 'Ready', color: 'bg-green-500' },
-  { value: 'served', label: 'Served', color: 'bg-teal-500' },
-  { value: 'completed', label: 'Completed', color: 'bg-gray-500' },
-  { value: 'cancelled', label: 'Cancelled', color: 'bg-red-500' },
+  { value: 'PENDING', label: 'Pending', color: 'bg-yellow-500' },
+  { value: 'CONFIRMED', label: 'Confirmed', color: 'bg-blue-500' },
+  { value: 'PREPARING', label: 'Preparing', color: 'bg-orange-500' },
+  { value: 'READY', label: 'Ready', color: 'bg-green-500' },
+  { value: 'SERVED', label: 'Served', color: 'bg-teal-500' },
+  { value: 'COMPLETED', label: 'Completed', color: 'bg-gray-500' },
+  { value: 'CANCELLED', label: 'Cancelled', color: 'bg-red-500' },
 ];
 
 const typeLabels: Record<string, string> = {
@@ -227,7 +227,10 @@ export default function OrderList() {
               </div>
               
               <div className="border rounded-lg p-3">
-                <p className="font-medium mb-2">Status Order</p>
+                <p className="font-medium">Status Order</p>
+                <p className="text-[11px] text-muted-foreground mb-3 italic">
+                  Gunakan pilihan di bawah ini untuk memperbarui tahapan pesanan saat ini.
+                </p>
                 <Select
                   value={selectedOrder.status}
                   onValueChange={(val) => handleStatusUpdate(selectedOrder.uuid, val as OrderStatus)}

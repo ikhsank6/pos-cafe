@@ -232,10 +232,10 @@ let OrdersService = class OrdersService {
                 throw new common_1.NotFoundException('Order tidak ditemukan.');
             }
             const validTransitions = {
-                PENDING: ['CONFIRMED', 'CANCELLED'],
-                CONFIRMED: ['PREPARING', 'CANCELLED'],
-                PREPARING: ['READY', 'CANCELLED'],
-                READY: ['SERVED', 'CANCELLED'],
+                PENDING: ['CONFIRMED', 'PREPARING', 'CANCELLED'],
+                CONFIRMED: ['PREPARING', 'READY', 'CANCELLED'],
+                PREPARING: ['READY', 'SERVED', 'CANCELLED'],
+                READY: ['SERVED', 'COMPLETED', 'CANCELLED'],
                 SERVED: ['COMPLETED'],
                 COMPLETED: [],
                 CANCELLED: [],
