@@ -362,13 +362,19 @@ export default function CreateOrder() {
                             <div className="flex-1 min-w-0"><h4 className="font-bold text-sm line-clamp-1">{field.name}</h4><p className="text-[10px] text-zinc-400 font-bold">{formatCurrency(field.price || 0)}</p></div>
                             <p className="font-black text-sm">{formatCurrency((field.price || 0) * currentQty)}</p>
                           </div>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center bg-white dark:bg-zinc-800 rounded-lg p-0.5 border shadow-sm">
-                              <button type="button" className="h-7 w-7 rounded-md flex items-center justify-center" onClick={() => currentQty <= 1 ? remove(index) : form.setValue(`items.${index}.quantity`, currentQty - 1)}>{currentQty <= 1 ? <Trash2 className="h-3.5 w-3.5 text-destructive" /> : '−'}</button>
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center bg-white dark:bg-zinc-800 rounded-lg p-0.5 border shadow-sm shrink-0">
+                              <button type="button" className="h-7 w-7 rounded-md flex items-center justify-center hover:bg-zinc-50 dark:hover:bg-zinc-700" onClick={() => currentQty <= 1 ? remove(index) : form.setValue(`items.${index}.quantity`, currentQty - 1)}>
+                                {currentQty <= 1 ? <Trash2 className="h-3.5 w-3.5 text-destructive" /> : '−'}
+                              </button>
                               <div className="w-8 text-center text-xs font-bold">{currentQty}</div>
-                              <button type="button" className="h-7 w-7 rounded-md flex items-center justify-center" onClick={() => form.setValue(`items.${index}.quantity`, currentQty + 1)}>+</button>
+                              <button type="button" className="h-7 w-7 rounded-md flex items-center justify-center hover:bg-zinc-50 dark:hover:bg-zinc-700" onClick={() => form.setValue(`items.${index}.quantity`, currentQty + 1)}>+</button>
                             </div>
-                            <input placeholder="Catatan..." className="w-32 bg-transparent text-[10px] font-medium border-none focus:ring-0 text-right text-zinc-400" {...form.register(`items.${index}.notes`)} />
+                            <input 
+                              placeholder="Catatan..." 
+                              className="flex-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg h-8 text-xs px-3 font-medium outline-none focus:ring-1 focus:ring-primary/30 transition-shadow" 
+                              {...form.register(`items.${index}.notes`)} 
+                            />
                           </div>
                         </div>
                       );
@@ -378,9 +384,23 @@ export default function CreateOrder() {
               </div>
 
               <div className="p-5 border-t bg-white dark:bg-zinc-900 space-y-4 shrink-0 shadow-lg">
-                <div className="flex gap-2">
-                  <input placeholder="KODE PROMO" className="flex-1 h-9 bg-zinc-50 dark:bg-zinc-800 border rounded-lg px-3 text-[10px] font-bold uppercase" value={discountCode} onChange={(e) => {setDiscountCode(e.target.value.toUpperCase()); setDiscountError('');}} />
-                  <Button type="button" size="sm" variant="secondary" className="h-9 px-4 font-bold text-xs" onClick={handleApplyDiscount} disabled={discountLoading || !discountCode}>{discountLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : 'PAKAI'}</Button>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input 
+                      placeholder="KODE PROMO" 
+                      className={`flex-1 h-9 bg-zinc-50 dark:bg-zinc-800 border rounded-lg px-3 text-[10px] font-bold uppercase outline-none focus:ring-1 transition-all ${discountError ? 'border-destructive ring-destructive/20' : 'border-zinc-200 dark:border-zinc-700'}`}
+                      value={discountCode} 
+                      onChange={(e) => {setDiscountCode(e.target.value.toUpperCase()); setDiscountError('');}} 
+                    />
+                    <Button type="button" size="sm" variant="secondary" className="h-9 px-4 font-bold text-xs" onClick={handleApplyDiscount} disabled={discountLoading || !discountCode}>
+                      {discountLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : 'PAKAI'}
+                    </Button>
+                  </div>
+                  {discountError && (
+                    <p className="text-[10px] font-bold text-destructive px-1 animate-in fade-in slide-in-from-top-1">
+                      {discountError}
+                    </p>
+                  )}
                 </div>
                 {appliedDiscount && <div className="bg-primary/10 rounded-lg p-2.5 flex items-center justify-between"><div className="flex items-center gap-2"><Tag size={14} className="text-primary" /><span className="text-[10px] font-bold text-primary">{appliedDiscount.code}</span></div><button onClick={handleRemoveDiscount} className="text-primary"><X size={14} /></button></div>}
                 <div className="space-y-1.5 px-1">
