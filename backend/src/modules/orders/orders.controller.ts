@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Patch, Body, Param, Query, UseGuards, ParseUUIDPipe, HttpCode, Request } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Delete, Body, Param, Query, UseGuards, ParseUUIDPipe, HttpCode, Request } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto, UpdateOrderStatusDto, UpdateOrderItemStatusDto, AddOrderItemsDto, OrderType, OrderStatus } from './dto/order.dto';
@@ -109,5 +109,13 @@ export class OrdersController {
         @Request() req,
     ) {
         return this.ordersService.addItems(uuid, addItemsDto, req.user?.fullName);
+    }
+    
+    @Delete(':uuid')
+    @Roles('Admin', 'OWNER')
+    @ApiOperation({ summary: 'Delete order ( OWNER/Admin only )' })
+    @ApiParam({ name: 'uuid', description: 'Order UUID' })
+    async remove(@Param('uuid', ParseUUIDPipe) uuid: string, @Request() req) {
+        return this.ordersService.remove(uuid, req.user?.fullName);
     }
 }

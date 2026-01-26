@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { showSuccess, showError, formatDateTime, formatCurrency } from '@/lib/utils';
 import { useTable } from '@/hooks/useTable';
+import { useAuthStore } from '@/stores/auth.store';
+import { DeleteDialog } from '@/components/ui/delete-dialog';
 import {
   Dialog,
   DialogContent,
@@ -41,6 +43,8 @@ const typeLabels: Record<string, string> = {
 
 export default function OrderList() {
   const navigate = useNavigate();
+  const user = useAuthStore(state => state.user);
+  const isOwnerOrAdmin = user?.activeRole?.code === 'ADMIN' || user?.activeRole?.code === 'OWNER';
   const {
     data: orders,
     loading,
@@ -59,6 +63,9 @@ export default function OrderList() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const handleStatusFilter = (status: string) => {
     if (status === 'all') {
@@ -92,6 +99,28 @@ export default function OrderList() {
     } finally {
       setUpdatingStatus(false);
     }
+  };
+
+  const handleDelete = async () => {
+    if (!orderToDelete) return;
+    
+    setDeleting(true);
+    try {
+      await orderService.delete(orderToDelete.uuid);
+      showSuccess('Order berhasil dihapus');
+      setDeleteDialogOpen(false);
+      setOrderToDelete(null);
+      fetchOrders();
+    } catch (error) {
+      showError(error);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const confirmDelete = (order: Order) => {
+    setOrderToDelete(order);
+    setDeleteDialogOpen(true);
   };
 
   const getStatusBadge = (status: OrderStatus) => {
@@ -159,6 +188,7 @@ export default function OrderList() {
 
   const tableActions: TableActions<Order> = {
     onView: openViewDialog,
+    onDelete: isOwnerOrAdmin ? confirmDelete : undefined,
   };
 
   return (
@@ -301,6 +331,15 @@ export default function OrderList() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <DeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Hapus Order"
+        description={`Apakah Anda yakin ingin menghapus order #${orderToDelete?.orderNumber}? Tindakan ini akan mengosongkan meja jika order ini adalah Dine In.`}
+        onConfirm={handleDelete}
+        loading={deleting}
+      />
     </div>
   );
 }

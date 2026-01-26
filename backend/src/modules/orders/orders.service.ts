@@ -470,4 +470,44 @@ export class OrdersService {
 
         return { message: 'Success', data: OrderResource.collection(orders) };
     }
+
+    async remove(uuid: string, deletedBy?: string) {
+        return this.prisma.$transaction(async (prisma) => {
+            const order = await prisma.order.findFirst({
+                where: { uuid, deletedAt: null },
+            });
+
+            if (!order) {
+                throw new NotFoundException('Order tidak ditemukan.');
+            }
+
+            // Soft delete the order
+            await prisma.order.update({
+                where: { id: order.id },
+                data: { 
+                    deletedAt: new Date(),
+                    deletedBy 
+                },
+            });
+
+            // Soft delete all order items
+            await prisma.orderItem.updateMany({
+                where: { orderId: order.id, deletedAt: null },
+                data: {
+                    deletedAt: new Date(),
+                    deletedBy
+                },
+            });
+
+            // If it's DINE_IN and has a table, make the table AVAILABLE again
+            if (order.tableId) {
+                await prisma.table.update({
+                    where: { id: order.tableId },
+                    data: { status: 'AVAILABLE' },
+                });
+            }
+
+            return { message: 'Order berhasil dihapus.', data: {} };
+        });
+    }
 }

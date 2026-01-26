@@ -112,4 +112,8 @@ export const orderService = {
     const response = await api.patch(`/order-management/orders/${orderUuid}/items/${itemUuid}/status`, { status }) as any;
     return response?.data;
   },
+  
+  delete: async (uuid: string) => {
+    return api.delete(`/order-management/orders/${uuid}`);
+  },
 };
