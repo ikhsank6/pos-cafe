@@ -57,6 +57,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu"
 import {
   AlertDialog,
@@ -141,12 +144,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const handleSwitchRole = async (roleUuid: string) => {
     try {
+      const selectedRole = user?.roles.find(r => r.uuid === roleUuid);
       await authService.switchRole(roleUuid);
-      showSuccess('Berhasil Switch role');
+      showSuccess(`Berhasil ganti role sebagai ${selectedRole?.name || 'User'}`);
       navigate("/admin/dashboard");
     } catch (error) {
       console.error("Failed to switch role:", error);
-      showErrorMessage('Gagal Switch role');
+      showErrorMessage('Gagal ganti role');
     }
   }
 
@@ -299,24 +303,30 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 {user?.roles && user.roles.length > 1 && (
                   <>
                     <DropdownMenuSeparator />
-                    <DropdownMenuLabel className="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Pilih Role</DropdownMenuLabel>
                     <DropdownMenuGroup>
-                      {user.roles.map((role) => (
-                        <DropdownMenuItem 
-                          key={role.uuid}
-                          onSelect={() => handleSwitchRole(role.uuid)}
-                          disabled={role.uuid === user.activeRole?.uuid}
-                          className="flex items-center justify-between"
-                        >
-                          <div className="flex items-center gap-2">
-                            <Shield className="size-4" />
-                            <span>{role.name}</span>
-                          </div>
-                          {role.uuid === user.activeRole?.uuid && (
-                            <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                          )}
-                        </DropdownMenuItem>
-                      ))}
+                      <DropdownMenuSub>
+                        <DropdownMenuSubTrigger className="cursor-pointer">
+                          <Shield className="mr-2 size-4" />
+                          <span>Ganti Role</span>
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuSubContent className="w-48 p-1">
+                          {user.roles.map((role) => (
+                            <DropdownMenuItem 
+                              key={role.uuid}
+                              onSelect={() => handleSwitchRole(role.uuid)}
+                              disabled={role.uuid === user.activeRole?.uuid}
+                              className="flex items-center justify-between cursor-pointer"
+                            >
+                              <div className="flex items-center gap-2">
+                                <span>{role.name}</span>
+                              </div>
+                              {role.uuid === user.activeRole?.uuid && (
+                                <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                              )}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuSubContent>
+                      </DropdownMenuSub>
                     </DropdownMenuGroup>
                   </>
                 )}
