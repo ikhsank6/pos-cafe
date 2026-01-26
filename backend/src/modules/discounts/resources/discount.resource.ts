@@ -28,8 +28,8 @@ export class DiscountResource {
         this.value = Number(discount.value);
         this.minPurchase = discount.minPurchase ? Number(discount.minPurchase) : null;
         this.maxDiscount = discount.maxDiscount ? Number(discount.maxDiscount) : null;
-        this.startDate = discount.startDate?.toISOString?.().split('T')[0] || discount.startDate;
-        this.endDate = discount.endDate?.toISOString?.().split('T')[0] || discount.endDate;
+        this.startDate = (discount.startDate instanceof Date) ? discount.startDate.toISOString().split('T')[0] : (discount.startDate?.toISOString?.().split('T')[0] || (typeof discount.startDate === 'string' ? discount.startDate.split('T')[0] : discount.startDate));
+        this.endDate = (discount.endDate instanceof Date) ? discount.endDate.toISOString().split('T')[0] : (discount.endDate?.toISOString?.().split('T')[0] || (typeof discount.endDate === 'string' ? discount.endDate.split('T')[0] : discount.endDate));
         this.isActive = discount.isActive;
         this.usageLimit = discount.usageLimit;
         this.usageCount = discount.usageCount;

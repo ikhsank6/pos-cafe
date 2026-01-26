@@ -42,7 +42,7 @@ export class CustomersController {
     @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER')
     @ApiOperation({ summary: 'Create new customer' })
     async create(@Body() createCustomerDto: CreateCustomerDto, @Request() req) {
-        return this.customersService.create(createCustomerDto, req.user?.uuid);
+        return this.customersService.create(createCustomerDto, req.user?.fullName);
     }
 
     @Put(':uuid')
@@ -54,7 +54,7 @@ export class CustomersController {
         @Body() updateCustomerDto: UpdateCustomerDto,
         @Request() req,
     ) {
-        return this.customersService.update(uuid, updateCustomerDto, req.user?.uuid);
+        return this.customersService.update(uuid, updateCustomerDto, req.user?.fullName);
     }
 
     @Delete(':uuid')
@@ -62,7 +62,7 @@ export class CustomersController {
     @ApiOperation({ summary: 'Delete customer by UUID (soft delete)' })
     @ApiParam({ name: 'uuid', description: 'Customer UUID' })
     async remove(@Param('uuid', ParseUUIDPipe) uuid: string, @Request() req) {
-        return this.customersService.remove(uuid, req.user?.uuid);
+        return this.customersService.remove(uuid, req.user?.fullName);
     }
 
     @Post(':uuid/loyalty-points')
@@ -75,6 +75,6 @@ export class CustomersController {
         @Body() body: { points: number },
         @Request() req,
     ) {
-        return this.customersService.addLoyaltyPoints(uuid, body.points, req.user?.uuid);
+        return this.customersService.addLoyaltyPoints(uuid, body.points, req.user?.fullName);
     }
 }

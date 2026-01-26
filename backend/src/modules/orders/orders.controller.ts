@@ -56,7 +56,7 @@ export class OrdersController {
     @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER', 'WAITER')
     @ApiOperation({ summary: 'Create new order' })
     async create(@Body() createOrderDto: CreateOrderDto, @Request() req) {
-        return this.ordersService.create(createOrderDto, req.user?.uuid);
+        return this.ordersService.create(createOrderDto, req.user?.fullName);
     }
 
     @Patch(':uuid/status')
@@ -68,7 +68,7 @@ export class OrdersController {
         @Body() updateStatusDto: UpdateOrderStatusDto,
         @Request() req,
     ) {
-        return this.ordersService.updateStatus(uuid, updateStatusDto, req.user?.uuid);
+        return this.ordersService.updateStatus(uuid, updateStatusDto, req.user?.fullName);
     }
 
     @Patch(':uuid/cancel')
@@ -81,7 +81,7 @@ export class OrdersController {
         @Request() req,
     ) {
         // Reuse updateStatus with CANCELLED status
-        return this.ordersService.updateStatus(uuid, { status: OrderStatus.CANCELLED }, req.user?.uuid);
+        return this.ordersService.updateStatus(uuid, { status: OrderStatus.CANCELLED }, req.user?.fullName);
     }
 
     @Patch(':uuid/items/:itemUuid/status')
@@ -95,7 +95,7 @@ export class OrdersController {
         @Body() updateStatusDto: UpdateOrderItemStatusDto,
         @Request() req,
     ) {
-        return this.ordersService.updateItemStatus(uuid, itemUuid, updateStatusDto, req.user?.uuid);
+        return this.ordersService.updateItemStatus(uuid, itemUuid, updateStatusDto, req.user?.fullName);
     }
 
     @Post(':uuid/items')
@@ -108,6 +108,6 @@ export class OrdersController {
         @Body() addItemsDto: AddOrderItemsDto,
         @Request() req,
     ) {
-        return this.ordersService.addItems(uuid, addItemsDto, req.user?.uuid);
+        return this.ordersService.addItems(uuid, addItemsDto, req.user?.fullName);
     }
 }

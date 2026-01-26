@@ -60,7 +60,7 @@ export class TransactionsController {
     @Roles('Admin', 'OWNER', 'MANAGER', 'CASHIER')
     @ApiOperation({ summary: 'Create payment for order' })
     async create(@Body() createTransactionDto: CreateTransactionDto, @Request() req) {
-        return this.transactionsService.create(createTransactionDto, req.user?.uuid);
+        return this.transactionsService.create(createTransactionDto, req.user?.fullName);
     }
 
     @Post(':uuid/refund')
@@ -73,6 +73,6 @@ export class TransactionsController {
         @Body() refundDto: RefundTransactionDto,
         @Request() req,
     ) {
-        return this.transactionsService.refund(uuid, refundDto, req.user?.uuid);
+        return this.transactionsService.refund(uuid, refundDto, req.user?.fullName);
     }
 }

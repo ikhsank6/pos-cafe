@@ -77,7 +77,7 @@ export const discountService = {
   },
 
   validateCode: async (code: string, orderAmount: number): Promise<{ valid: boolean; discount?: Discount; message?: string }> => {
-    const response = await api.post('/discount-management/discounts/validate', { code, orderAmount }) as any;
-    return response?.data;
+    const response = await api.get(`/discount-management/discounts/validate/${code}?amount=${orderAmount}`) as any;
+    return response;
   },
 };

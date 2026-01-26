@@ -39,7 +39,7 @@ export class CategoriesController {
     @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Create new category' })
     async create(@Body() createCategoryDto: CreateCategoryDto, @Request() req) {
-        return this.categoriesService.create(createCategoryDto, req.user?.uuid);
+        return this.categoriesService.create(createCategoryDto, req.user?.fullName);
     }
 
     @Put(':uuid')
@@ -51,7 +51,7 @@ export class CategoriesController {
         @Body() updateCategoryDto: UpdateCategoryDto,
         @Request() req,
     ) {
-        return this.categoriesService.update(uuid, updateCategoryDto, req.user?.uuid);
+        return this.categoriesService.update(uuid, updateCategoryDto, req.user?.fullName);
     }
 
     @Delete(':uuid')
@@ -59,6 +59,6 @@ export class CategoriesController {
     @ApiOperation({ summary: 'Delete category by UUID (soft delete)' })
     @ApiParam({ name: 'uuid', description: 'Category UUID' })
     async remove(@Param('uuid', ParseUUIDPipe) uuid: string, @Request() req) {
-        return this.categoriesService.remove(uuid, req.user?.uuid);
+        return this.categoriesService.remove(uuid, req.user?.fullName);
     }
 }

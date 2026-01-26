@@ -50,7 +50,7 @@ export class ProductsController {
     @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Create new product' })
     async create(@Body() createProductDto: CreateProductDto, @Request() req) {
-        return this.productsService.create(createProductDto, req.user?.uuid);
+        return this.productsService.create(createProductDto, req.user?.fullName);
     }
 
     @Put(':uuid')
@@ -62,7 +62,7 @@ export class ProductsController {
         @Body() updateProductDto: UpdateProductDto,
         @Request() req,
     ) {
-        return this.productsService.update(uuid, updateProductDto, req.user?.uuid);
+        return this.productsService.update(uuid, updateProductDto, req.user?.fullName);
     }
 
     @Delete(':uuid')
@@ -70,7 +70,7 @@ export class ProductsController {
     @ApiOperation({ summary: 'Delete product by UUID (soft delete)' })
     @ApiParam({ name: 'uuid', description: 'Product UUID' })
     async remove(@Param('uuid', ParseUUIDPipe) uuid: string, @Request() req) {
-        return this.productsService.remove(uuid, req.user?.uuid);
+        return this.productsService.remove(uuid, req.user?.fullName);
     }
 
     @Post(':uuid/stock')
@@ -83,6 +83,6 @@ export class ProductsController {
         @Body() body: { quantity: number },
         @Request() req,
     ) {
-        return this.productsService.updateStock(uuid, body.quantity, req.user?.uuid);
+        return this.productsService.updateStock(uuid, body.quantity, req.user?.fullName);
     }
 }

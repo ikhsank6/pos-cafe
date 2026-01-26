@@ -9,7 +9,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
 } from '@/components/ui/form';
 import {
   Select,
@@ -28,13 +27,18 @@ import {
   ArrowLeft, 
   ShoppingCart, 
   ClipboardList,
-  ChevronRight
+  ChevronRight,
+  Tag,
+  X,
+  Check,
+  Loader2
 } from 'lucide-react';
 import { orderService, type CreateOrderData } from '@/services/order.service';
 import { productService, type Product } from '@/services/product.service';
 import { tableService, type Table } from '@/services/table.service';
 import { customerService, type Customer } from '@/services/customer.service';
 import { categoryService, type Category } from '@/services/category.service';
+import { discountService, type Discount } from '@/services/discount.service';
 import { formatCurrency, showSuccess, showError } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -66,6 +70,12 @@ export default function CreateOrder() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  
+  // Discount state
+  const [discountCode, setDiscountCode] = useState('');
+  const [appliedDiscount, setAppliedDiscount] = useState<Discount | null>(null);
+  const [discountLoading, setDiscountLoading] = useState(false);
+  const [discountError, setDiscountError] = useState('');
 
   const form = useForm<OrderFormData>({
     resolver: zodResolver(orderFormSchema),
@@ -129,6 +139,61 @@ export default function CreateOrder() {
     return items.reduce((acc, item) => acc + (item.price || 0) * (item.quantity || 0), 0);
   };
 
+  const subtotal = calculateSubtotal();
+
+  // Auto-remove discount if subtotal drops below minPurchase
+  useEffect(() => {
+    if (appliedDiscount && appliedDiscount.minPurchase && subtotal < appliedDiscount.minPurchase) {
+      setAppliedDiscount(null);
+      setDiscountError(`Diskon dilepas: Minimum belanja ${formatCurrency(appliedDiscount.minPurchase)} belum terpenuhi`);
+      showError(`Diskon ${appliedDiscount.code} dilepas karena subtotal tidak memenuhi syarat.`);
+    }
+  }, [subtotal, appliedDiscount]);
+
+  const handleApplyDiscount = async () => {
+    if (!discountCode) return;
+    
+    setDiscountLoading(true);
+    setDiscountError('');
+    try {
+      const subtotal = calculateSubtotal();
+      const response = await discountService.validateCode(discountCode, subtotal);
+      
+      // Based on typical response structure { message, data: { discount, discountAmount } }
+      if (response && (response as any).data) {
+        setAppliedDiscount((response as any).data.discount);
+        showSuccess('Diskon berhasil diterapkan');
+      } else {
+        setDiscountError('Kode diskon tidak valid');
+      }
+    } catch (error: any) {
+      setDiscountError(error?.response?.data?.meta?.message || 'Gagal memverifikasi diskon');
+    } finally {
+      setDiscountLoading(false);
+    }
+  };
+
+  const handleRemoveDiscount = () => {
+    setAppliedDiscount(null);
+    setDiscountCode('');
+    setDiscountError('');
+  };
+
+  const calculateDiscountAmount = (subtotal: number) => {
+    if (!appliedDiscount) return 0;
+    
+    let amount = 0;
+    if (appliedDiscount.type === 'PERCENTAGE') {
+      amount = (subtotal * appliedDiscount.value) / 100;
+      if (appliedDiscount.maxDiscount && amount > appliedDiscount.maxDiscount) {
+        amount = appliedDiscount.maxDiscount;
+      }
+    } else {
+      amount = appliedDiscount.value;
+    }
+    return amount;
+  };
+
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name?.toLowerCase().includes(searchProduct.toLowerCase()) ||
                          p.sku?.toLowerCase().includes(searchProduct.toLowerCase());
@@ -143,6 +208,7 @@ export default function CreateOrder() {
         type: data.type,
         tableUuid: data.tableUuid === 'none' ? undefined : (data.tableUuid || undefined),
         customerUuid: data.customerUuid === 'none' ? undefined : (data.customerUuid || undefined),
+        discountCode: appliedDiscount?.code,
         notes: data.notes,
         items: data.items.map(item => ({
           productUuid: item.productUuid,
@@ -248,7 +314,7 @@ export default function CreateOrder() {
 
           {/* Product Grid */}
           <ScrollArea className="flex-1 p-4">
-            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
               {filteredProducts.map(product => {
                 const addedItem = fields.find(f => f.productUuid === product.uuid);
                 const addedQty = addedItem ? form.watch(`items.${fields.indexOf(addedItem)}.quantity`) : 0;
@@ -256,53 +322,60 @@ export default function CreateOrder() {
                 return (
                   <Card 
                     key={product.uuid} 
-                    className={`relative overflow-hidden cursor-pointer hover:shadow-md ${addedQty > 0 ? 'ring-2 ring-primary' : ''}`}
+                    className={`group relative border-none shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col ${addedQty > 0 ? 'ring-2 ring-primary bg-primary/5' : 'bg-card'}`}
                     onClick={() => handleAddProduct(product)}
                   >
+                    {/* Floating Price Tag */}
+                    <div className="absolute top-3 left-3 z-10">
+                      <Badge className="bg-background/90 backdrop-blur-md text-foreground border shadow-sm font-bold">
+                        {formatCurrency(Number(product.price))}
+                      </Badge>
+                    </div>
+
                     {/* Quantity Badge */}
                     {addedQty > 0 && (
-                      <div className="absolute top-2 right-2 z-10 bg-primary text-primary-foreground rounded-full h-6 w-6 flex items-center justify-center text-xs font-bold">
+                      <div className="absolute top-3 right-3 z-10 bg-primary text-primary-foreground rounded-full h-8 w-8 flex items-center justify-center text-sm font-black shadow-lg animate-in zoom-in-50 duration-300">
                         {addedQty}
                       </div>
                     )}
                     
-                    <CardContent className="p-0">
-                      {/* Image */}
-                      <div className="aspect-square bg-muted flex items-center justify-center overflow-hidden">
+                    <CardContent className="p-0 flex-1 flex flex-col">
+                      {/* Image Container */}
+                      <div className="aspect-4/3 bg-muted relative overflow-hidden">
                         {product.media?.path ? (
                           <img 
                             src={`${env.API_URL}${product.media.path}`} 
                             alt={product.name} 
-                            className="w-full h-full object-cover" 
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
                           />
                         ) : (
-                          <div className="text-muted-foreground/20 font-bold text-4xl">
-                            {product.name.charAt(0)}
+                          <div className="w-full h-full flex items-center justify-center bg-zinc-100 dark:bg-zinc-800">
+                            <span className="text-4xl font-bold text-muted-foreground/20 italic">{product.name.charAt(0)}</span>
                           </div>
                         )}
+                        <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
                       
-                      {/* Info */}
-                      <div className="p-3">
-                        <h3 className="font-medium text-sm line-clamp-2 mb-1">
-                          {product.name}
-                        </h3>
-                        <p className="text-xs text-muted-foreground mb-2">
-                          {product.category?.name || 'Reguler'}
-                        </p>
-                        <p className="text-sm font-bold text-primary">
-                          {formatCurrency(Number(product.price))}
-                        </p>
+                      {/* Info Container */}
+                      <div className="p-4 flex flex-col justify-between flex-1 gap-3">
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-primary/70 mb-1">
+                            {product.category?.name || 'Reguler'}
+                          </p>
+                          <h3 className="font-bold text-sm tracking-tight line-clamp-2 text-foreground group-hover:text-primary transition-colors">
+                            {product.name}
+                          </h3>
+                        </div>
                         
-                        {/* Controls */}
-                        <div className="mt-3">
+                        {/* Control Section */}
+                        <div>
                           {addedQty > 0 ? (
-                            <div className="flex items-center justify-between bg-muted rounded-lg p-1">
+                            <div className="flex items-center justify-between border rounded-full p-1 bg-background/50 backdrop-blur-sm shadow-inner">
                               <Button 
                                 type="button" 
                                 variant="ghost" 
                                 size="icon" 
-                                className="h-7 w-7"
+                                className="h-8 w-8 rounded-full hover:bg-destructive hover:text-white transition-all active:scale-90"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   const index = fields.indexOf(addedItem!);
@@ -313,34 +386,35 @@ export default function CreateOrder() {
                                   }
                                 }}
                               >
-                                {addedQty <= 1 ? <Trash2 className="h-4 w-4" /> : <span>−</span>}
+                                {addedQty <= 1 ? <Trash2 className="h-4 w-4" /> : <span className="text-lg font-bold">−</span>}
                               </Button>
-                              <span className="text-sm font-bold">{addedQty}</span>
+                              <span className="text-sm font-black w-6 text-center">{addedQty}</span>
                               <Button 
                                 type="button" 
                                 variant="ghost" 
                                 size="icon" 
-                                className="h-7 w-7"
+                                className="h-8 w-8 rounded-full hover:bg-primary hover:text-white transition-all active:scale-90"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  const index = fields.indexOf(addedItem!);
-                                  form.setValue(`items.${index}.quantity`, addedQty + 1);
+                                  handleAddProduct(product);
                                 }}
                               >
-                                <span>+</span>
+                                <span className="text-lg font-bold">+</span>
                               </Button>
                             </div>
                           ) : (
                             <Button 
                               type="button"
+                              variant="outline"
                               size="sm"
-                              className="w-full"
+                              className="w-full rounded-full border-primary/20 hover:border-primary hover:bg-primary hover:text-white transition-all font-bold text-xs"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleAddProduct(product);
                               }}
                             >
-                              Tambah
+                              <Plus className="mr-2 h-3.5 w-3.5" />
+                              TAMBAH
                             </Button>
                           )}
                         </div>
@@ -523,40 +597,138 @@ export default function CreateOrder() {
                 </div>
               </ScrollArea>
 
-              {/* Total & Checkout Section - Solid Background */}
-              <div className="p-4 border-t bg-background shadow-[0_-4px_10px_rgba(0,0,0,0.05)] space-y-4 shrink-0">
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center px-1">
-                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Total</p>
-                    <p className="text-2xl font-black tracking-tighter text-foreground">
+              {/* Actions & Summary Section */}
+              <div className="p-4 border-t bg-background shadow-[0_-10px_20px_rgba(0,0,0,0.03)] space-y-4 shrink-0">
+                {/* Discount Tool */}
+                {!appliedDiscount ? (
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Tag className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input 
+                          placeholder="Kode Diskon..." 
+                          className={`pl-9 h-10 text-xs font-mono uppercase transition-all ${discountError ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                          value={discountCode}
+                          onChange={(e) => {
+                            setDiscountCode(e.target.value);
+                            setDiscountError('');
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleApplyDiscount();
+                            }
+                          }}
+                        />
+                      </div>
+                      <Button 
+                        type="button" 
+                        variant="secondary" 
+                        className="h-10 px-4 font-bold text-xs"
+                        onClick={handleApplyDiscount}
+                        disabled={discountLoading || !discountCode}
+                      >
+                        {discountLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'PAKAI'}
+                      </Button>
+                    </div>
+                    {discountError && (
+                      <p className="text-[10px] text-destructive font-bold pl-1 animate-in fade-in slide-in-from-top-1">
+                        {discountError}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 flex items-center justify-between animate-in zoom-in-95 duration-300">
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 bg-primary rounded-full flex items-center justify-center text-white shadow-md">
+                        <Check className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-black text-primary tracking-tight leading-none mb-1">DISKON AKTIF</p>
+                        <div className="space-y-0.5">
+                          <p className="text-[10px] font-bold text-foreground/70 uppercase leading-none">Code: {appliedDiscount.code}</p>
+                          {Number(appliedDiscount.minPurchase) > 0 && (
+                            <p className="text-[9px] text-primary/80 font-bold leading-none animate-pulse">
+                              Min. Order: {formatCurrency(Number(appliedDiscount.minPurchase))}
+                            </p>
+                          )}
+                          {Number(appliedDiscount.maxDiscount) > 0 && (
+                            <p className="text-[9px] text-primary/80 font-bold leading-none">
+                              Max. Potongan: {formatCurrency(Number(appliedDiscount.maxDiscount))}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive"
+                      onClick={handleRemoveDiscount}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+
+                {/* Billing Summary */}
+                <div className="bg-muted/10 rounded-2xl p-1 space-y-1">
+                  <div className="flex justify-between items-center px-3 py-1">
+                    <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">Subtotal</p>
+                    <p className="text-sm font-bold text-foreground">
                       {formatCurrency(calculateSubtotal())}
                     </p>
                   </div>
                   
-                  <FormField
-                    control={form.control}
-                    name="notes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input 
-                            placeholder="Catatan pesanan (opsional)..." 
-                            className="bg-muted/30 border-none text-xs h-10"
-                            {...field} 
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
+                  {appliedDiscount && (
+                    <div className="flex justify-between items-center px-3 py-1 bg-green-50/50 dark:bg-green-500/10 rounded-lg">
+                      <p className="text-[11px] font-bold text-green-600 dark:text-green-500 uppercase tracking-widest flex items-center gap-1">
+                        Diskon {appliedDiscount.type === 'PERCENTAGE' && `(${appliedDiscount.value}%)`}
+                      </p>
+                      <p className="text-sm font-bold text-green-600 dark:text-green-500">
+                        − {formatCurrency(calculateDiscountAmount(calculateSubtotal()))}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between items-center px-3 pt-3 pb-2 border-t mt-1">
+                    <p className="text-sm font-black text-foreground uppercase tracking-wider">Total</p>
+                    <p className="text-2xl font-black tracking-tighter text-primary">
+                      {formatCurrency(Math.max(0, calculateSubtotal() - calculateDiscountAmount(calculateSubtotal())))}
+                    </p>
+                  </div>
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input 
+                          placeholder="Catatan pesanan (opsional)..." 
+                          className="bg-muted/30 border-none text-xs h-10 rounded-xl"
+                          {...field} 
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
 
                 <Button 
                   type="submit" 
-                  className="w-full h-12 text-sm font-bold rounded-xl shadow-lg ring-offset-background transition-all active:scale-95"
+                  className="w-full h-14 text-sm font-black rounded-2xl shadow-xl shadow-primary/20 ring-offset-background transition-all active:scale-[0.98] bg-primary hover:bg-primary/95"
                   disabled={submitting || fields.length === 0}
                 >
-                  {submitting ? 'Memproses...' : 'BUAT PESANAN'}
-                  {!submitting && <ChevronRight className="ml-2 h-4 w-4" />}
+                  {submitting ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <>
+                      BUAT PESANAN
+                      <ChevronRight className="ml-2 h-5 w-5" />
+                    </>
+                  )}
                 </Button>
               </div>
             </form>

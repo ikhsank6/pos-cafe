@@ -1,1 +1,14 @@
-/backend/dist/*
+# Build outputs
+backend/dist
+frontend/dist
+
+# Dependencies
+node_modules
+
+# Environment
+.env
+*.local
+
+# Logs
+logs
+*.log

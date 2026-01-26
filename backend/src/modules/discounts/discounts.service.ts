@@ -67,6 +67,10 @@ export class DiscountsService {
     }
 
     async validateDiscount(code: string, orderAmount: number) {
+        if (isNaN(orderAmount)) {
+            throw new BadRequestException('Total pesanan tidak valid.');
+        }
+
         const discount = await this.prisma.discount.findFirst({
             where: { code, deletedAt: null },
         });
@@ -93,19 +97,23 @@ export class DiscountsService {
             throw new BadRequestException('Kuota diskon sudah habis.');
         }
 
-        if (discount.minPurchase && orderAmount < Number(discount.minPurchase)) {
-            throw new BadRequestException(`Minimum pembelian Rp ${Number(discount.minPurchase).toLocaleString()}.`);
+        const minPurchaseVal = discount.minPurchase ? Number(discount.minPurchase) : 0;
+        if (minPurchaseVal > 0 && orderAmount < minPurchaseVal) {
+            throw new BadRequestException(`Minimum pembelian Rp ${minPurchaseVal.toLocaleString()}.`);
         }
 
         // Calculate discount amount
-        let discountAmount: number;
+        let discountAmount = 0;
+        const discountVal = Number(discount.value);
+        const maxDiscountVal = discount.maxDiscount ? Number(discount.maxDiscount) : 0;
+
         if (discount.type === 'PERCENTAGE') {
-            discountAmount = (orderAmount * Number(discount.value)) / 100;
-            if (discount.maxDiscount && discountAmount > Number(discount.maxDiscount)) {
-                discountAmount = Number(discount.maxDiscount);
+            discountAmount = (orderAmount * discountVal) / 100;
+            if (maxDiscountVal > 0 && discountAmount > maxDiscountVal) {
+                discountAmount = maxDiscountVal;
             }
         } else {
-            discountAmount = Number(discount.value);
+            discountAmount = discountVal;
         }
 
         return {

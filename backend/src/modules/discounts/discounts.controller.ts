@@ -59,7 +59,7 @@ export class DiscountsController {
     @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Create new discount' })
     async create(@Body() createDiscountDto: CreateDiscountDto, @Request() req) {
-        return this.discountsService.create(createDiscountDto, req.user?.uuid);
+        return this.discountsService.create(createDiscountDto, req.user?.fullName);
     }
 
     @Put(':uuid')
@@ -71,7 +71,7 @@ export class DiscountsController {
         @Body() updateDiscountDto: UpdateDiscountDto,
         @Request() req,
     ) {
-        return this.discountsService.update(uuid, updateDiscountDto, req.user?.uuid);
+        return this.discountsService.update(uuid, updateDiscountDto, req.user?.fullName);
     }
 
     @Delete(':uuid')
@@ -79,6 +79,6 @@ export class DiscountsController {
     @ApiOperation({ summary: 'Delete discount by UUID (soft delete)' })
     @ApiParam({ name: 'uuid', description: 'Discount UUID' })
     async remove(@Param('uuid', ParseUUIDPipe) uuid: string, @Request() req) {
-        return this.discountsService.remove(uuid, req.user?.uuid);
+        return this.discountsService.remove(uuid, req.user?.fullName);
     }
 }

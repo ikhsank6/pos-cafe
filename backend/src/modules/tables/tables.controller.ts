@@ -41,7 +41,7 @@ export class TablesController {
     @Roles('Admin', 'OWNER', 'MANAGER')
     @ApiOperation({ summary: 'Create new table' })
     async create(@Body() createTableDto: CreateTableDto, @Request() req) {
-        return this.tablesService.create(createTableDto, req.user?.uuid);
+        return this.tablesService.create(createTableDto, req.user?.fullName);
     }
 
     @Put(':uuid')
@@ -53,7 +53,7 @@ export class TablesController {
         @Body() updateTableDto: UpdateTableDto,
         @Request() req,
     ) {
-        return this.tablesService.update(uuid, updateTableDto, req.user?.uuid);
+        return this.tablesService.update(uuid, updateTableDto, req.user?.fullName);
     }
 
     @Delete(':uuid')
@@ -61,7 +61,7 @@ export class TablesController {
     @ApiOperation({ summary: 'Delete table by UUID (soft delete)' })
     @ApiParam({ name: 'uuid', description: 'Table UUID' })
     async remove(@Param('uuid', ParseUUIDPipe) uuid: string, @Request() req) {
-        return this.tablesService.remove(uuid, req.user?.uuid);
+        return this.tablesService.remove(uuid, req.user?.fullName);
     }
 
     @Put(':uuid/status')
@@ -73,6 +73,6 @@ export class TablesController {
         @Body() body: { status: TableStatus },
         @Request() req,
     ) {
-        return this.tablesService.updateStatus(uuid, body.status as unknown as PrismaTableStatus, req.user?.uuid);
+        return this.tablesService.updateStatus(uuid, body.status as unknown as PrismaTableStatus, req.user?.fullName);
     }
 }
