@@ -38,6 +38,7 @@ import { categoryService, type Category } from '@/services/category.service';
 import { formatCurrency, showSuccess, showError } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { env } from '@/config/env';
 
 const orderFormSchema = z.object({
   type: z.enum(['DINE_IN', 'TAKEAWAY', 'DELIVERY']),
@@ -161,28 +162,36 @@ export default function CreateOrder() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-muted-foreground animate-pulse">Memuat POS...</p>
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative">
+            <div className="h-12 w-12 rounded-full border-4 border-primary/20" />
+            <div className="absolute top-0 h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          </div>
+          <p className="text-sm font-medium animate-pulse text-muted-foreground">Menyiapkan Sistem POS...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
-      {/* Top Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b bg-background sticky top-0 z-10">
+    <div className="flex flex-col h-[calc(100vh-4rem)] bg-muted/30 dark:bg-zinc-950">
+      {/* Top Header - Simple */}
+      <div className="flex items-center justify-between px-6 py-3 bg-background border-b shrink-0">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/admin/order-management/orders')}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => navigate('/admin/order-management/orders')}
+          >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-xl font-bold">POS - Order Baru</h1>
-            <p className="text-sm text-muted-foreground">Tambah pesanan baru ke sistem</p>
+            <h1 className="text-lg font-bold">POS - Order Baru</h1>
+            <p className="text-xs text-muted-foreground">Buat pesanan baru</p>
           </div>
         </div>
+        
         <div className="flex items-center gap-3">
           <Button 
             variant="outline" 
@@ -194,113 +203,186 @@ export default function CreateOrder() {
           <Button 
             onClick={form.handleSubmit(onFormSubmit)} 
             disabled={submitting || fields.length === 0}
-            className="px-8"
           >
-            {submitting ? 'Memproses...' : 'Selesaikan Order'}
+            {submitting ? 'Memproses...' : 'Proses Pesanan'}
           </Button>
         </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left Side: Product Selection */}
-        <div className="flex-1 flex flex-col border-r bg-muted/5">
-          {/* Categories Strip */}
-          <div className="p-4 border-b bg-background shadow-sm overflow-x-auto scrollbar-none">
-            <div className="flex gap-2">
-              <Button 
-                variant={selectedCategory === null ? "default" : "outline"}
-                size="sm"
-                className="rounded-full px-4"
-                onClick={() => setSelectedCategory(null)}
-              >
-                Semua
-              </Button>
-              {categories.map(cat => (
-                <Button 
-                  key={cat.uuid}
-                  variant={selectedCategory === cat.uuid ? "default" : "outline"}
-                  size="sm"
-                  className="rounded-full px-4"
-                  onClick={() => setSelectedCategory(cat.uuid)}
-                >
-                  {cat.name}
-                </Button>
-              ))}
-            </div>
-          </div>
-
+        <div className="flex-1 flex flex-col bg-background border-r">
           {/* Search Bar */}
-          <div className="p-4 bg-background border-b">
+          <div className="p-4 border-b">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input 
-                placeholder="Cari produk berdasarkan nama atau SKU..." 
-                className="pl-10 h-11 bg-muted/50 border-none focus-visible:ring-1 focus-visible:ring-primary"
+                placeholder="Cari produk..." 
+                className="pl-10 h-10"
                 value={searchProduct}
                 onChange={(e) => setSearchProduct(e.target.value)}
               />
             </div>
           </div>
 
+          {/* Categories */}
+          <div className="px-4 py-3 flex gap-2 overflow-x-auto border-b bg-muted/30">
+            <Button 
+              variant={selectedCategory === null ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedCategory(null)}
+            >
+              Semua
+            </Button>
+            {categories.map(cat => (
+              <Button 
+                key={cat.uuid}
+                variant={selectedCategory === cat.uuid ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedCategory(cat.uuid)}
+              >
+                {cat.name}
+              </Button>
+            ))}
+          </div>
+
           {/* Product Grid */}
-          <ScrollArea className="flex-1 p-6">
+          <ScrollArea className="flex-1 p-4">
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-              {filteredProducts.map(product => (
-                <Card 
-                  key={product.uuid} 
-                  className="group relative overflow-hidden transition-all duration-200 hover:shadow-lg hover:border-primary/50 cursor-pointer active:scale-95 border-none bg-background ring-1 ring-border"
-                  onClick={() => handleAddProduct(product)}
-                >
-                  <CardContent className="p-0">
-                    <div className="aspect-4/3 bg-muted/30 flex items-center justify-center overflow-hidden">
-                      {product.imageUrl ? (
-                        <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
-                      ) : (
-                        <div className="text-muted-foreground font-bold text-lg opacity-20">{product.name.charAt(0)}</div>
-                      )}
-                    </div>
-                    <div className="p-3">
-                      <h3 className="font-semibold text-sm line-clamp-2 min-h-[40px] group-hover:text-primary transition-colors">{product.name}</h3>
-                      <div className="mt-2 flex items-center justify-between">
-                        <span className="text-sm font-bold text-primary">{formatCurrency(Number(product.price))}</span>
-                        <Badge variant="outline" className="text-[10px] h-5 px-1 bg-muted/50 border-none">{product.stock} stk</Badge>
+              {filteredProducts.map(product => {
+                const addedItem = fields.find(f => f.productUuid === product.uuid);
+                const addedQty = addedItem ? form.watch(`items.${fields.indexOf(addedItem)}.quantity`) : 0;
+                
+                return (
+                  <Card 
+                    key={product.uuid} 
+                    className={`relative overflow-hidden cursor-pointer hover:shadow-md ${addedQty > 0 ? 'ring-2 ring-primary' : ''}`}
+                    onClick={() => handleAddProduct(product)}
+                  >
+                    {/* Quantity Badge */}
+                    {addedQty > 0 && (
+                      <div className="absolute top-2 right-2 z-10 bg-primary text-primary-foreground rounded-full h-6 w-6 flex items-center justify-center text-xs font-bold">
+                        {addedQty}
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    )}
+                    
+                    <CardContent className="p-0">
+                      {/* Image */}
+                      <div className="aspect-square bg-muted flex items-center justify-center overflow-hidden">
+                        {product.media?.path ? (
+                          <img 
+                            src={`${env.API_URL}${product.media.path}`} 
+                            alt={product.name} 
+                            className="w-full h-full object-cover" 
+                          />
+                        ) : (
+                          <div className="text-muted-foreground/20 font-bold text-4xl">
+                            {product.name.charAt(0)}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Info */}
+                      <div className="p-3">
+                        <h3 className="font-medium text-sm line-clamp-2 mb-1">
+                          {product.name}
+                        </h3>
+                        <p className="text-xs text-muted-foreground mb-2">
+                          {product.category?.name || 'Reguler'}
+                        </p>
+                        <p className="text-sm font-bold text-primary">
+                          {formatCurrency(Number(product.price))}
+                        </p>
+                        
+                        {/* Controls */}
+                        <div className="mt-3">
+                          {addedQty > 0 ? (
+                            <div className="flex items-center justify-between bg-muted rounded-lg p-1">
+                              <Button 
+                                type="button" 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-7 w-7"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const index = fields.indexOf(addedItem!);
+                                  if (addedQty <= 1) {
+                                    remove(index);
+                                  } else {
+                                    form.setValue(`items.${index}.quantity`, addedQty - 1);
+                                  }
+                                }}
+                              >
+                                {addedQty <= 1 ? <Trash2 className="h-4 w-4" /> : <span>−</span>}
+                              </Button>
+                              <span className="text-sm font-bold">{addedQty}</span>
+                              <Button 
+                                type="button" 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-7 w-7"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const index = fields.indexOf(addedItem!);
+                                  form.setValue(`items.${index}.quantity`, addedQty + 1);
+                                }}
+                              >
+                                <span>+</span>
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button 
+                              type="button"
+                              size="sm"
+                              className="w-full"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAddProduct(product);
+                              }}
+                            >
+                              Tambah
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </ScrollArea>
         </div>
 
-        {/* Right Side: Order Summary & Customer Info */}
-        <div className="w-[400px] flex flex-col bg-background shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)]">
+        {/* Right Side: Order Summary */}
+        <div className="w-[400px] flex flex-col bg-background border-l shadow-sm">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onFormSubmit)} className="flex flex-col h-full">
-              {/* Order Info Section */}
-              <div className="p-6 space-y-6 border-b">
-                <div className="flex items-center gap-2 mb-2">
-                  <ClipboardList className="h-5 w-5 text-primary" />
-                  <h2 className="font-bold text-lg">Informasi Order</h2>
+            <form onSubmit={form.handleSubmit(onFormSubmit)} className="flex flex-col h-full overflow-hidden">
+              {/* Order Info - Compact */}
+              <div className="p-4 space-y-4 border-b shrink-0 bg-muted/20">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                    <ClipboardList className="h-4 w-4" />
+                    Informasi Order
+                  </h2>
+                  <Badge variant="outline" className="bg-background">{form.getValues('type')}</Badge>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <FormField
                     control={form.control}
                     name="type"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs uppercase tracking-wider font-bold text-muted-foreground">Tipe</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
-                            <SelectTrigger className="h-10 bg-muted/30 border-none shadow-none focus:ring-1 focus:ring-primary">
-                              <SelectValue />
+                            <SelectTrigger className="h-8 text-xs bg-background">
+                              <SelectValue placeholder="Tipe" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="DINE_IN">Makan Sini</SelectItem>
-                            <SelectItem value="TAKEAWAY">Bawa Pulang</SelectItem>
-                            <SelectItem value="DELIVERY">Delivery</SelectItem>
+                            <SelectItem value="DINE_IN" className="text-xs">Makan Sini</SelectItem>
+                            <SelectItem value="TAKEAWAY" className="text-xs">Bawa Pulang</SelectItem>
+                            <SelectItem value="DELIVERY" className="text-xs">Delivery</SelectItem>
                           </SelectContent>
                         </Select>
                       </FormItem>
@@ -311,17 +393,16 @@ export default function CreateOrder() {
                     name="tableUuid"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs uppercase tracking-wider font-bold text-muted-foreground">Meja</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
-                            <SelectTrigger className="h-10 bg-muted/30 border-none shadow-none focus:ring-1 focus:ring-primary">
-                              <SelectValue />
+                            <SelectTrigger className="h-8 text-xs bg-background">
+                              <SelectValue placeholder="Meja" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="none">Tanpa Meja</SelectItem>
-                            {Array.isArray(tables) && tables.map(table => (
-                              <SelectItem key={table.uuid} value={table.uuid}>
+                            <SelectItem value="none" className="text-xs">Tanpa Meja</SelectItem>
+                            {tables.map(table => (
+                              <SelectItem key={table.uuid} value={table.uuid} className="text-xs">
                                 Meja {table.number}
                               </SelectItem>
                             ))}
@@ -337,17 +418,16 @@ export default function CreateOrder() {
                   name="customerUuid"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs uppercase tracking-wider font-bold text-muted-foreground">Pelanggan</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger className="h-10 bg-muted/30 border-none shadow-none focus:ring-1 focus:ring-primary">
-                            <SelectValue />
+                          <SelectTrigger className="h-8 text-xs bg-background">
+                            <SelectValue placeholder="Pilih Pelanggan" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="none">Walk-in Customer</SelectItem>
-                          {Array.isArray(customers) && customers.map(customer => (
-                            <SelectItem key={customer.uuid} value={customer.uuid}>
+                          <SelectItem value="none" className="text-xs">Walk-in Customer</SelectItem>
+                          {customers.map(customer => (
+                            <SelectItem key={customer.uuid} value={customer.uuid} className="text-xs">
                               {customer.name}
                             </SelectItem>
                           ))}
@@ -358,126 +438,125 @@ export default function CreateOrder() {
                 />
               </div>
 
-              {/* Items List */}
-              <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="px-6 py-4 flex items-center justify-between border-b bg-muted/5">
-                  <div className="flex items-center gap-2">
-                    <ShoppingCart className="h-5 w-5 text-primary" />
-                    <span className="font-bold">Item Pesanan</span>
-                  </div>
-                  <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors">{fields.length} Items</Badge>
+              {/* Items List Header */}
+              <div className="px-4 py-2 border-b bg-muted/10 shrink-0 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-primary font-bold">
+                  <ShoppingCart className="h-4 w-4" />
+                  <span className="text-sm">Item Pesanan</span>
                 </div>
-
-                <ScrollArea className="flex-1">
-                  <div className="p-4 space-y-3">
-                    {fields.length === 0 ? (
-                      <div className="h-40 flex flex-col items-center justify-center text-muted-foreground space-y-2 opacity-30">
-                        <Plus className="h-10 w-10 border-2 rounded-full p-2 border-dashed border-muted-foreground" />
-                        <p className="text-sm font-medium italic">Klik produk untuk menambah</p>
-                      </div>
-                    ) : (
-                      fields.map((field, index) => (
-                        <div key={field.id} className="group p-3 rounded-xl border ring-offset-background transition-all duration-200 hover:ring-1 hover:ring-primary/30 hover:shadow-sm bg-background">
-                          <div className="flex justify-between items-start gap-4">
-                            <div className="flex-1 min-w-0">
-                              <p className="font-bold text-sm truncate">{field.name}</p>
-                              <p className="text-xs text-muted-foreground mt-0.5">{formatCurrency(field.price || 0)}</p>
-                            </div>
-                            <Button 
-                              type="button" 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-7 w-7 rounded-lg text-destructive hover:bg-destructive/10 -mt-1 -mr-1" 
-                              onClick={() => remove(index)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          
-                          <div className="flex items-center justify-between mt-3">
-                            <div className="flex items-center bg-muted/50 rounded-lg p-0.5">
-                              <Button 
-                                type="button" 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-7 w-7 rounded-md hover:bg-background shadow-none"
-                                onClick={() => {
-                                  const val = form.getValues(`items.${index}.quantity`);
-                                  if (val > 1) form.setValue(`items.${index}.quantity`, val - 1);
-                                }}
-                              >
-                                -
-                              </Button>
-                              <div className="w-8 text-center text-sm font-bold">
-                                {form.watch(`items.${index}.quantity`)}
-                              </div>
-                              <Button 
-                                type="button" 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-7 w-7 rounded-md hover:bg-background shadow-none"
-                                onClick={() => {
-                                  const val = form.getValues(`items.${index}.quantity`);
-                                  form.setValue(`items.${index}.quantity`, val + 1);
-                                }}
-                              >
-                                +
-                              </Button>
-                            </div>
-                            <div className="font-bold text-sm text-primary">
-                              {formatCurrency((field.price || 0) * form.watch(`items.${index}.quantity`))}
-                            </div>
-                          </div>
-                          
-                          <div className="mt-2 group-focus-within:block hidden">
-                            <Input 
-                              placeholder="Tambah catatan..." 
-                              className="h-8 text-xs bg-muted/20 border-none shadow-none"
-                              {...form.register(`items.${index}.notes`)}
-                            />
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </ScrollArea>
+                <Badge className="font-bold">{fields.length} Items</Badge>
               </div>
 
-              {/* Order Totals Section */}
-              <div className="p-6 bg-muted/5 border-t space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Subtotal</span>
-                    <span className="font-medium">{formatCurrency(calculateSubtotal())}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-lg font-bold">Total Pembayaran</span>
-                    <span className="text-2xl font-black text-primary">{formatCurrency(calculateSubtotal())}</span>
-                  </div>
-                </div>
-                
-                <FormField
-                  control={form.control}
-                  name="notes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <div className="relative">
-                          <ClipboardList className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground opacity-50" />
-                          <Input placeholder="Catatan untuk dapur/kurir..." {...field} className="pl-10 h-10 text-sm bg-background border-muted" />
+              {/* Scrollable Items */}
+              <ScrollArea className="flex-1 bg-muted/5">
+                <div className="p-4 space-y-3">
+                  {fields.length === 0 ? (
+                    <div className="h-60 flex flex-col items-center justify-center text-muted-foreground opacity-50">
+                      <ShoppingCart className="h-12 w-12 mb-2" />
+                      <p className="text-sm font-medium">Belum ada item</p>
+                    </div>
+                  ) : (
+                    fields.map((field, index) => {
+                      const currentQty = form.watch(`items.${index}.quantity`);
+                      const itemTotal = (field.price || 0) * currentQty;
+                      
+                      return (
+                        <div 
+                          key={field.id} 
+                          className="bg-background rounded-xl border p-3 shadow-sm space-y-3"
+                        >
+                          <div className="flex justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-sm line-clamp-1">{field.name}</p>
+                              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight">
+                                {formatCurrency(field.price || 0)} x {currentQty}
+                              </p>
+                            </div>
+                            <p className="font-bold text-sm text-primary">
+                              {formatCurrency(itemTotal)}
+                            </p>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center bg-muted/50 rounded-lg p-0.5 shrink-0 border">
+                              <Button 
+                                type="button" 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-7 w-7 rounded-md"
+                                onClick={() => {
+                                  if (currentQty <= 1) {
+                                    remove(index);
+                                  } else {
+                                    form.setValue(`items.${index}.quantity`, currentQty - 1);
+                                  }
+                                }}
+                              >
+                                {currentQty <= 1 ? <Trash2 className="h-3.5 w-3.5 text-destructive" /> : <span className="text-lg">−</span>}
+                              </Button>
+                              <div className="w-8 text-center text-sm font-bold">{currentQty}</div>
+                              <Button 
+                                type="button" 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-7 w-7 rounded-md"
+                                onClick={() => {
+                                  form.setValue(`items.${index}.quantity`, currentQty + 1);
+                                }}
+                              >
+                                <span className="text-lg">+</span>
+                              </Button>
+                            </div>
+                            
+                            <div className="relative flex-1">
+                              <Input 
+                                placeholder="Catatan..." 
+                                className="h-8 text-[11px] pl-2 bg-muted/20 border-none focus-visible:ring-1"
+                                {...form.register(`items.${index}.notes`)}
+                              />
+                            </div>
+                          </div>
                         </div>
-                      </FormControl>
-                    </FormItem>
+                      );
+                    })
                   )}
-                />
+                </div>
+              </ScrollArea>
+
+              {/* Total & Checkout Section - Solid Background */}
+              <div className="p-4 border-t bg-background shadow-[0_-4px_10px_rgba(0,0,0,0.05)] space-y-4 shrink-0">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center px-1">
+                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Total</p>
+                    <p className="text-2xl font-black tracking-tighter text-foreground">
+                      {formatCurrency(calculateSubtotal())}
+                    </p>
+                  </div>
+                  
+                  <FormField
+                    control={form.control}
+                    name="notes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input 
+                            placeholder="Catatan pesanan (opsional)..." 
+                            className="bg-muted/30 border-none text-xs h-10"
+                            {...field} 
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 <Button 
                   type="submit" 
-                  className="w-full h-12 text-lg font-bold shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  className="w-full h-12 text-sm font-bold rounded-xl shadow-lg ring-offset-background transition-all active:scale-95"
                   disabled={submitting || fields.length === 0}
                 >
                   {submitting ? 'Memproses...' : 'BUAT PESANAN'}
-                  {!submitting && <ChevronRight className="ml-2 h-5 w-5" />}
+                  {!submitting && <ChevronRight className="ml-2 h-4 w-4" />}
                 </Button>
               </div>
             </form>
