@@ -20,16 +20,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { 
   Plus, 
-  Minus,
-  Trash2, 
-  Search, 
   ArrowLeft, 
-  ShoppingCart, 
-  Tag,
-  X,
   Loader2,
-  ChevronRight,
-  ReceiptText
 } from 'lucide-react';
 import { orderService, type CreateOrderData } from '@/services/order.service';
 import { productService, type Product } from '@/services/product.service';
@@ -51,11 +43,24 @@ import {
 } from "@/components/ui/alert-dialog";
 import { env } from '@/config/env';
 
+// New global components
+import { SearchInput } from '@/components/ui/search-input';
+import { CategoryTabs } from '@/components/ui/category-tabs';
+import { QuantityControl } from '@/components/ui/quantity-control';
+import { EmptyState } from '@/components/ui/empty-state';
+import { PromoCodeInput } from '@/components/ui/promo-code-input';
+import { OrderSummary } from '@/components/ui/order-summary';
+import { InfoCard, InfoCardGrid } from '@/components/ui/info-card';
+
+// Utils
+import { PAYMENT_METHODS, calculateDiscountAmount, getPaymentMethodLabel, getOrderTypeLabel } from '@/lib/order.utils';
+
 const orderFormSchema = z.object({
   type: z.enum(['DINE_IN', 'TAKEAWAY', 'DELIVERY']),
   tableUuid: z.string().optional().or(z.literal('none')),
   customerUuid: z.string().optional().or(z.literal('none')),
   notes: z.string().optional(),
+  paymentMethod: z.string().optional(),
   items: z.array(z.object({
     productUuid: z.string().min(1, 'Pilih produk'),
     quantity: z.number().min(1, 'Min 1'),
@@ -91,6 +96,8 @@ export default function CreateOrder() {
       items: [],
       tableUuid: 'none',
       customerUuid: 'none',
+      notes: '',
+      paymentMethod: 'CASH',
     },
   });
 
@@ -177,16 +184,7 @@ export default function CreateOrder() {
     setDiscountError('');
   };
 
-  const calculateDiscountAmount = (val: number) => {
-    if (!appliedDiscount) return 0;
-    let amount = appliedDiscount.type === 'PERCENTAGE' 
-      ? (val * appliedDiscount.value) / 100 
-      : appliedDiscount.value;
-    if (appliedDiscount.maxDiscount && amount > appliedDiscount.maxDiscount) {
-      amount = appliedDiscount.maxDiscount;
-    }
-    return amount;
-  };
+
 
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name?.toLowerCase().includes(searchProduct.toLowerCase()) ||
@@ -249,15 +247,11 @@ export default function CreateOrder() {
           </div>
           
           <div className="flex-1 max-w-lg mx-8">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-              <input 
-                placeholder="Cari menu..." 
-                className="w-full bg-zinc-100 dark:bg-zinc-800 border-none rounded-lg pl-10 h-10 text-sm outline-none focus:ring-1 focus:ring-zinc-200"
-                value={searchProduct}
-                onChange={(e) => setSearchProduct(e.target.value)}
-              />
-            </div>
+            <SearchInput
+              placeholder="Cari menu..." 
+              value={searchProduct}
+              onChange={(e) => setSearchProduct(e.target.value)}
+            />
           </div>
 
           <div className="text-xs font-medium text-zinc-400">
@@ -266,31 +260,20 @@ export default function CreateOrder() {
         </header>
 
         {/* CATEGORIES */}
-        <nav className="px-6 py-3 flex gap-2 overflow-x-auto no-scrollbar shrink-0 border-b">
-          <button 
-            onClick={() => setSelectedCategory(null)}
-            className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors ${
-              selectedCategory === null 
-              ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900" 
-              : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400"
-            }`}
-          >
-            Semua ({getCategoryCount(null)})
-          </button>
-          {categories.map(cat => (
-            <button 
-              key={cat.uuid}
-              onClick={() => setSelectedCategory(cat.uuid)}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors ${
-                selectedCategory === cat.uuid 
-                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900" 
-                : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400"
-              }`}
-            >
-              {cat.name} ({getCategoryCount(cat.uuid)})
-            </button>
-          ))}
-        </nav>
+        <div className="px-6 border-b shrink-0">
+          <CategoryTabs
+            selectedId={selectedCategory}
+            onSelect={setSelectedCategory}
+            categories={[
+              { id: null, label: 'Semua', count: getCategoryCount(null) },
+              ...categories.map(cat => ({
+                id: cat.uuid,
+                label: cat.name,
+                count: getCategoryCount(cat.uuid)
+              }))
+            ]}
+          />
+        </div>
 
         {/* PRODUCT GRID */}
         <div className="flex-1 min-h-0 relative">
@@ -336,29 +319,18 @@ export default function CreateOrder() {
                           <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mb-3">{formatCurrency(Number(product.price))}</p>
                           
                           {addedQty > 0 ? (
-                            <div className="flex items-center justify-between bg-zinc-100 dark:bg-zinc-800 rounded-lg p-1" onClick={(e) => e.stopPropagation()}>
-                              <button 
-                                type="button" 
-                                className="w-8 h-8 flex items-center justify-center hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-md transition-colors"
-                                onClick={() => {
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <QuantityControl
+                                value={addedQty}
+                                onChange={(val) => {
                                   const idx = fields.findIndex(f => f.productUuid === product.uuid);
-                                  if (addedQty <= 1) remove(idx);
-                                  else form.setValue(`items.${idx}.quantity`, addedQty - 1);
+                                  form.setValue(`items.${idx}.quantity`, val);
                                 }}
-                              >
-                                {addedQty <= 1 ? <Trash2 size={14} className="text-rose-500" /> : <Minus size={14} strokeWidth={3} />}
-                              </button>
-                              <span className="text-xs font-bold dark:text-white">{addedQty}</span>
-                              <button 
-                                type="button" 
-                                className="w-8 h-8 flex items-center justify-center hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-md transition-colors"
-                                onClick={() => {
+                                onRemove={() => {
                                   const idx = fields.findIndex(f => f.productUuid === product.uuid);
-                                  form.setValue(`items.${idx}.quantity`, addedQty + 1);
+                                  remove(idx);
                                 }}
-                              >
-                                <Plus size={14} strokeWidth={3} />
-                              </button>
+                              />
                             </div>
                           ) : (
                             <div className="h-9 w-full rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400 group-hover:bg-zinc-900 group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-zinc-900 transition-colors">
@@ -379,135 +351,169 @@ export default function CreateOrder() {
       {/* SUMMARY SIDEBAR */}
       <aside className="w-[360px] flex flex-col bg-white dark:bg-zinc-900">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onFormSubmit)} className="flex flex-col h-full">
-            <div className="p-6 space-y-4 border-b">
-              <div className="grid grid-cols-2 gap-3">
+          <form onSubmit={form.handleSubmit(onFormSubmit)} className="flex flex-col h-full bg-white dark:bg-zinc-900">
+            {/* 1. TOP: KERANJANG (Scrollable Area) */}
+            <div className="shrink-0 px-6 py-4 flex items-center justify-between border-b bg-white dark:bg-zinc-900">
+               <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Keranjang ({fields.length})</span>
+               {fields.length > 0 && (
+                 <button type="button" onClick={() => remove()} className="text-[10px] font-bold text-rose-500 hover:underline uppercase">Hapus Semua</button>
+               )}
+            </div>
+            
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              <div className="space-y-3">
+                {fields.length === 0 ? (
+                  <EmptyState 
+                    title="Keranjang Kosong" 
+                    size="md"
+                  />
+                ) : fields.map((field, index) => {
+                  const currentQty = form.watch(`items.${index}.quantity`);
+                  return (
+                    <div key={field.id} className="pb-3 border-b border-zinc-100 dark:border-zinc-800 space-y-2 last:border-0">
+                      <div className="flex justify-between items-start gap-3">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-xs text-zinc-800 dark:text-zinc-100 line-clamp-1">{field.name}</h4>
+                          <p className="text-[10px] text-zinc-400 font-medium">{formatCurrency(field.price || 0)} x {currentQty}</p>
+                        </div>
+                        <p className="font-bold text-xs whitespace-nowrap text-zinc-900 dark:text-zinc-50">{formatCurrency((field.price || 0) * currentQty)}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <QuantityControl
+                          size="sm"
+                          value={currentQty}
+                          onChange={(val) => form.setValue(`items.${index}.quantity`, val)}
+                          onRemove={() => remove(index)}
+                        />
+                        <input 
+                          placeholder="Catatan item..." 
+                          className="flex-1 h-7 bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-lg text-[10px] px-2 outline-none focus:ring-1 focus:ring-zinc-300 placeholder:text-zinc-400"
+                          {...form.register(`items.${index}.notes`)} 
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Separator */}
+            <div className="shrink-0 border-t border-zinc-100 dark:border-zinc-800" />
+
+            {/* 2. MIDDLE: ORDER DETAILS (Compact) */}
+            <div className="px-6 py-4 bg-zinc-50/30 dark:bg-zinc-900 border-b shrink-0">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                 <FormField control={form.control} name="type" render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="space-y-1">
+                    <label className="text-[9px] font-bold uppercase text-zinc-500 dark:text-zinc-400">Tipe Pesanan</label>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger className="font-bold text-xs h-9 rounded-lg">
+                        <SelectTrigger className="font-semibold text-[11px] h-8 rounded-lg bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700">
                           <SelectValue placeholder="Tipe" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent><SelectItem value="DINE_IN">Makan Sini</SelectItem><SelectItem value="TAKEAWAY">Bawa Pulang</SelectItem><SelectItem value="DELIVERY">Delivery</SelectItem></SelectContent>
+                      <SelectContent>
+                        <SelectItem value="DINE_IN">Dine In</SelectItem>
+                        <SelectItem value="TAKEAWAY">Take Away</SelectItem>
+                        <SelectItem value="DELIVERY">Delivery</SelectItem>
+                      </SelectContent>
                     </Select>
                   </FormItem>
                 )} />
+
                 <FormField control={form.control} name="tableUuid" render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="space-y-1">
+                    <label className="text-[9px] font-bold uppercase text-zinc-500 dark:text-zinc-400">Meja</label>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger className="font-bold text-xs h-9 rounded-lg">
-                          <SelectValue placeholder="Meja" />
+                        <SelectTrigger className="font-semibold text-[11px] h-8 rounded-lg bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700">
+                          <SelectValue placeholder="Pilih Meja" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="max-h-60"><SelectItem value="none">Tanpa Meja</SelectItem>{tables.map(table => (<SelectItem key={table.uuid} value={table.uuid}>Meja {table.number}</SelectItem>))}</SelectContent>
+                      <SelectContent className="max-h-60">
+                        <SelectItem value="none">Tanpa Meja</SelectItem>
+                        {tables.map(table => (
+                          <SelectItem key={table.uuid} value={table.uuid}>Meja {table.number}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="customerUuid" render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <label className="text-[9px] font-bold uppercase text-zinc-500 dark:text-zinc-400">Pelanggan</label>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="font-semibold text-[11px] h-8 rounded-lg bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700">
+                          <SelectValue placeholder="Pilih" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="max-h-60">
+                        <SelectItem value="none">Walk-in Guest</SelectItem>
+                        {customers.map(customer => (
+                          <SelectItem key={customer.uuid} value={customer.uuid}>{customer.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="paymentMethod" render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <label className="text-[9px] font-bold uppercase text-zinc-500 dark:text-zinc-400">Metode Bayar</label>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="font-semibold text-[11px] h-8 rounded-lg bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700">
+                          <SelectValue placeholder="Pilih" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {PAYMENT_METHODS.map(pm => (
+                          <SelectItem key={pm.value} value={pm.value}>{pm.label}</SelectItem>
+                        ))}
+                      </SelectContent>
                     </Select>
                   </FormItem>
                 )} />
               </div>
-              <FormField control={form.control} name="customerUuid" render={({ field }) => (
-                <FormItem>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="font-bold text-xs h-9 rounded-lg">
-                        <SelectValue placeholder="Pilih Pelanggan" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="max-h-60"><SelectItem value="none">Walk-in Guest</SelectItem>{customers.map(customer => (<SelectItem key={customer.uuid} value={customer.uuid}>{customer.name}</SelectItem>))}</SelectContent>
-                  </Select>
+              
+              <FormField control={form.control} name="notes" render={({ field }) => (
+                <FormItem className="mt-3">
+                  <label className="text-[9px] font-bold uppercase text-zinc-500 dark:text-zinc-400">Catatan</label>
+                  <FormControl>
+                    <input 
+                      placeholder="Catatan pesanan (opsional)..." 
+                      className="w-full h-8 text-[11px] px-3 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 outline-none focus:ring-1 focus:ring-zinc-300 placeholder:text-zinc-400 mt-1"
+                      {...field}
+                    />
+                  </FormControl>
                 </FormItem>
               )} />
             </div>
 
-            <div className="flex-1 overflow-hidden flex flex-col">
-              <div className="px-6 py-4 flex items-center justify-between shrink-0">
-                 <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Keranjang ({fields.length})</span>
-                 {fields.length > 0 && (
-                   <button type="button" onClick={() => remove()} className="text-[10px] font-bold text-rose-500 hover:underline uppercase">Hapus Semua</button>
-                 )}
-              </div>
-              
-              <ScrollArea className="flex-1">
-                <div className="px-6 pb-6 space-y-3">
-                  {fields.length === 0 ? (
-                    <div className="h-40 flex flex-col items-center justify-center opacity-20">
-                      <ShoppingCart className="h-8 w-8 mb-2" />
-                      <p className="text-[10px] font-bold uppercase tracking-widest">Kosong</p>
-                    </div>
-                  ) : fields.map((field, index) => {
-                    const currentQty = form.watch(`items.${index}.quantity`);
-                    return (
-                      <div key={field.id} className="pb-3 border-b dark:border-zinc-800 space-y-2">
-                        <div className="flex justify-between items-start gap-4">
-                          <div className="flex-1">
-                            <h4 className="font-bold text-xs text-zinc-800 dark:text-zinc-100 line-clamp-1">{field.name}</h4>
-                            <p className="text-[10px] text-zinc-400 font-medium">{formatCurrency(field.price || 0)} x {currentQty}</p>
-                          </div>
-                          <p className="font-bold text-xs whitespace-nowrap">{formatCurrency((field.price || 0) * currentQty)}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="flex items-center border rounded-lg overflow-hidden shrink-0">
-                            <button type="button" className="h-7 w-7 flex items-center justify-center hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors" onClick={() => currentQty <= 1 ? remove(index) : form.setValue(`items.${index}.quantity`, currentQty - 1)}>
-                              {currentQty <= 1 ? <Trash2 size={12} className="text-rose-500" /> : <Minus size={12} />}
-                            </button>
-                            <div className="w-8 text-center text-[10px] font-bold">{currentQty}</div>
-                            <button type="button" className="h-7 w-7 flex items-center justify-center hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors" onClick={() => form.setValue(`items.${index}.quantity`, currentQty + 1)}>
-                               <Plus size={12} />
-                            </button>
-                          </div>
-                          <input 
-                            placeholder="Catatan..." 
-                            className="flex-1 h-7 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg text-[10px] px-2 outline-none" 
-                            {...form.register(`items.${index}.notes`)} 
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </ScrollArea>
-            </div>
+            {/* 3. BOTTOM: SUMMARY & CHECKOUT */}
+            <div className="p-6 bg-zinc-50 dark:bg-zinc-900 border-t space-y-4 shadow-[0_-10px_30px_rgba(0,0,0,0.02)] shrink-0">
+              <PromoCodeInput
+                value={discountCode}
+                onChange={setDiscountCode}
+                onApply={handleApplyDiscount}
+                onRemove={handleRemoveDiscount}
+                appliedCode={appliedDiscount?.code}
+                error={discountError}
+                loading={discountLoading}
+                disabled={submitting}
+              />
 
-            <div className="p-6 bg-zinc-50 dark:bg-zinc-900 border-t space-y-4 shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
-              <div className="flex gap-2">
-                <input 
-                  placeholder="KODE PROMO" 
-                  className="flex-1 h-9 bg-white dark:bg-zinc-800 border rounded-lg px-3 text-[10px] font-bold uppercase outline-none focus:ring-1 focus:ring-zinc-200"
-                  value={discountCode} 
-                  onChange={(e) => {setDiscountCode(e.target.value.toUpperCase()); setDiscountError('');}} 
-                />
-                <Button type="button" size="sm" variant="outline" className="h-9 px-4 font-bold text-[10px]" onClick={handleApplyDiscount} disabled={discountLoading || !discountCode}>PAKAI</Button>
-              </div>
-              {discountError && <p className="text-[10px] font-bold text-rose-500 px-1">{discountError}</p>}
-              {appliedDiscount && (
-                <div className="flex items-center justify-between text-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 px-3 py-2 rounded-lg border border-emerald-100">
-                  <span className="text-[10px] font-bold uppercase tracking-widest">{appliedDiscount.code} AKTIF</span>
-                  <button onClick={handleRemoveDiscount}><X size={14} /></button>
-                </div>
-              )}
-
-              <div className="space-y-1.5 py-2">
-                <div className="flex justify-between items-center text-[10px] font-bold uppercase text-zinc-400">
-                  <span>Subtotal</span>
-                  <span>{formatCurrency(subtotal)}</span>
-                </div>
-                {appliedDiscount && (
-                  <div className="flex justify-between items-center text-[10px] font-bold uppercase text-emerald-600">
-                    <span>Diskon</span>
-                    <span>-{formatCurrency(calculateDiscountAmount(subtotal))}</span>
-                  </div>
-                )}
-                <div className="flex justify-between items-center pt-2 border-t mt-1">
-                  <span className="text-xs font-bold uppercase text-zinc-500">Total</span>
-                  <span className="text-xl font-bold text-zinc-900 dark:text-zinc-50">{formatCurrency(Math.max(0, subtotal - calculateDiscountAmount(subtotal)))}</span>
-                </div>
-              </div>
+              <OrderSummary
+                subtotal={subtotal}
+                discount={calculateDiscountAmount(subtotal, appliedDiscount)}
+                discountLabel={appliedDiscount ? `Diskon (${appliedDiscount.code})` : 'Diskon'}
+              />
 
               <Button 
                 type="button" 
-                className="w-full h-12 text-sm font-bold rounded-xl mt-2" 
+                className="w-full h-12 text-sm font-black rounded-2xl shadow-lg shadow-zinc-900/10 dark:shadow-none" 
                 disabled={submitting || fields.length === 0} 
                 onClick={() => setIsConfirmOpen(true)}
               >
@@ -527,20 +533,31 @@ export default function CreateOrder() {
           </AlertDialogHeader>
 
           <div className="p-6 space-y-4">
-            <div className="grid grid-cols-2 gap-4 text-[10px] font-bold uppercase text-zinc-400">
-              <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-xl">
-                <span>Tipe</span>
-                <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mt-1">{form.getValues('type')}</p>
-              </div>
-              <div className="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-xl">
-                <span>Meja</span>
-                <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mt-1">
-                  {form.getValues('tableUuid') !== 'none' ? tables.find(t => t.uuid === form.getValues('tableUuid'))?.number : '-'}
-                </p>
-              </div>
-            </div>
+            <InfoCardGrid columns={2}>
+              <InfoCard
+                label="Tipe"
+                value={getOrderTypeLabel(form.getValues('type'))}
+              />
+              <InfoCard
+                label="Meja"
+                value={form.getValues('tableUuid') !== 'none' ? tables.find(t => t.uuid === form.getValues('tableUuid'))?.number : '-'}
+              />
+              <InfoCard
+                className="col-span-2"
+                label="Metode Bayar"
+                value={getPaymentMethodLabel(form.getValues('paymentMethod') || '')}
+              />
+            </InfoCardGrid>
 
-            <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar border-b pb-4">
+            {form.getValues('notes') && (
+              <InfoCard
+                variant="warning"
+                label="Catatan"
+                value={form.getValues('notes')}
+              />
+            )}
+
+            <div className="space-y-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar border-b pb-4">
               {fields.map((item, index) => (
                 <div key={item.id} className="flex justify-between items-center text-xs">
                   <span className="font-medium text-zinc-500">{form.watch(`items.${index}.quantity`)}x {item.name}</span>
@@ -549,23 +566,12 @@ export default function CreateOrder() {
               ))}
             </div>
 
-            <div className="space-y-1.5 border-b pb-4">
-              <div className="flex justify-between items-center text-[10px] font-bold uppercase text-zinc-400">
-                <span>Subtotal</span>
-                <span>{formatCurrency(subtotal)}</span>
-              </div>
-              {appliedDiscount && (
-                <div className="flex justify-between items-center text-[10px] font-bold uppercase text-emerald-600">
-                  <span>Diskon ({appliedDiscount.code})</span>
-                  <span>-{formatCurrency(calculateDiscountAmount(subtotal))}</span>
-                </div>
-              )}
-            </div>
-
-            <div className="flex justify-between items-center font-bold">
-              <span className="text-sm text-zinc-500 uppercase">Total Tagihan</span>
-              <span className="text-2xl text-zinc-900 dark:text-zinc-50">{formatCurrency(Math.max(0, subtotal - calculateDiscountAmount(subtotal)))}</span>
-            </div>
+            <OrderSummary
+              showTotal
+              subtotal={subtotal}
+              discount={calculateDiscountAmount(subtotal, appliedDiscount)}
+              discountLabel={`Diskon (${appliedDiscount?.code || ''})`}
+            />
           </div>
 
           <AlertDialogFooter className="p-6 bg-zinc-50 dark:bg-zinc-900/50 border-t flex gap-3">

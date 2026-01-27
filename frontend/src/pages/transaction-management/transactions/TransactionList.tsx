@@ -102,11 +102,11 @@ export default function TransactionList() {
 
   const columns: Column<Transaction>[] = [
     {
-      key: 'transactionNumber',
+      key: 'transactionNo',
       header: 'No. Transaksi',
       cell: (transaction) => (
         <div className="flex flex-col">
-          <span className="font-medium font-mono">{transaction.transactionNumber}</span>
+          <span className="font-medium font-mono">{transaction.transactionNo}</span>
           <span className="text-xs text-muted-foreground">Order: {transaction.order?.orderNumber}</span>
         </div>
       ),
@@ -122,7 +122,7 @@ export default function TransactionList() {
       key: 'amount',
       header: 'Total',
       cell: (transaction) => (
-        <span className="font-medium">{formatCurrency(transaction.totalAmount)}</span>
+        <span className="font-medium">{formatCurrency(transaction.amount)}</span>
       ),
     },
     {
@@ -201,14 +201,14 @@ export default function TransactionList() {
         <DialogContent className="max-w-lg" preventInteractOutside>
           <DialogHeader>
             <DialogTitle>Detail Transaksi</DialogTitle>
-            <DialogDescription>Transaksi #{selectedTransaction?.transactionNumber}</DialogDescription>
+            <DialogDescription>Transaksi #{selectedTransaction?.transactionNo}</DialogDescription>
           </DialogHeader>
           {selectedTransaction && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">No. Transaksi</p>
-                  <p className="font-mono font-medium">{selectedTransaction.transactionNumber}</p>
+                  <p className="font-mono font-medium">{selectedTransaction.transactionNo}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">No. Order</p>
@@ -231,31 +231,31 @@ export default function TransactionList() {
               <div className="border rounded-lg p-3 space-y-2">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>{formatCurrency(selectedTransaction.subtotal)}</span>
+                  <span>{formatCurrency(selectedTransaction.order?.subtotal || 0)}</span>
                 </div>
-                {selectedTransaction.discountAmount > 0 && (
+                {Number(selectedTransaction.order?.discount || 0) > 0 && (
                   <div className="flex justify-between text-green-600">
                     <span>Diskon</span>
-                    <span>-{formatCurrency(selectedTransaction.discountAmount)}</span>
+                    <span>-{formatCurrency(selectedTransaction.order?.discount || 0)}</span>
                   </div>
                 )}
-                {selectedTransaction.taxAmount > 0 && (
+                {Number(selectedTransaction.order?.tax || 0) > 0 && (
                   <div className="flex justify-between">
                     <span>Pajak</span>
-                    <span>{formatCurrency(selectedTransaction.taxAmount)}</span>
+                    <span>{formatCurrency(selectedTransaction.order?.tax || 0)}</span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold border-t pt-2">
                   <span>Total</span>
-                  <span>{formatCurrency(selectedTransaction.totalAmount)}</span>
+                  <span>{formatCurrency(selectedTransaction.amount || 0)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Dibayar</span>
-                  <span>{formatCurrency(selectedTransaction.paidAmount)}</span>
+                  <span>{formatCurrency(selectedTransaction.paidAmount || 0)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Kembalian</span>
-                  <span>{formatCurrency(selectedTransaction.changeAmount)}</span>
+                  <span>{formatCurrency(selectedTransaction.changeAmount || 0)}</span>
                 </div>
               </div>
 
@@ -283,7 +283,7 @@ export default function TransactionList() {
         open={refundDialogOpen}
         onOpenChange={setRefundDialogOpen}
         title="Refund Transaksi"
-        itemName={transactionToRefund?.transactionNumber}
+        itemName={transactionToRefund?.transactionNo}
         onConfirm={handleRefund}
         description="Apakah Anda yakin ingin melakukan refund untuk transaksi ini? Tindakan ini tidak dapat dibatalkan."
         confirmLabel="Refund"

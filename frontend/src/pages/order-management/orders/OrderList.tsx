@@ -1,14 +1,18 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { orderService, type Order, type OrderStatus } from '@/services/order.service';
+import { transactionService, type PaymentMethod } from '@/services/transaction.service';
 import { DataTable, type Column, type TableActions } from '@/components/ui/data-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Plus, CreditCard, Loader2 } from 'lucide-react';
 import { showSuccess, showError, formatDateTime, formatCurrency } from '@/lib/utils';
 import { useTable } from '@/hooks/useTable';
 import { useAuthStore } from '@/stores/auth.store';
 import { DeleteDialog } from '@/components/ui/delete-dialog';
+import { MoneyInput } from '@/components/ui/money-input';
 import {
   Dialog,
   DialogContent,
@@ -41,6 +45,15 @@ const typeLabels: Record<string, string> = {
   delivery: 'Delivery',
 };
 
+const paymentMethodOptions: { value: PaymentMethod; label: string }[] = [
+  { value: 'CASH', label: 'Tunai' },
+  { value: 'QRIS', label: 'QRIS' },
+  { value: 'E_WALLET', label: 'E-Wallet' },
+  { value: 'DEBIT_CARD', label: 'Kartu Debit' },
+  { value: 'CREDIT_CARD', label: 'Kartu Kredit' },
+  { value: 'BANK_TRANSFER', label: 'Transfer Bank' },
+];
+
 export default function OrderList() {
   const navigate = useNavigate();
   const user = useAuthStore(state => state.user);
@@ -66,6 +79,14 @@ export default function OrderList() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Payment Dialog State
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [orderToPay, setOrderToPay] = useState<Order | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH');
+  const [paidAmount, setPaidAmount] = useState('');
+  const [paymentNotes, setPaymentNotes] = useState('');
+  const [processingPayment, setProcessingPayment] = useState(false);
 
   const handleStatusFilter = (status: string) => {
     if (status === 'all') {
@@ -122,6 +143,51 @@ export default function OrderList() {
     setOrderToDelete(order);
     setDeleteDialogOpen(true);
   };
+
+  // Payment handlers
+  const openPaymentDialog = (order: Order) => {
+    setOrderToPay(order);
+    setPaidAmount(order.total.toString());
+    setPaymentMethod('CASH');
+    setPaymentNotes('');
+    setPaymentDialogOpen(true);
+  };
+
+  const closePaymentDialog = () => {
+    setPaymentDialogOpen(false);
+    setOrderToPay(null);
+    setPaidAmount('');
+    setPaymentNotes('');
+  };
+
+  const handlePayment = async () => {
+    if (!orderToPay) return;
+    
+    const paid = parseFloat(paidAmount);
+    if (isNaN(paid) || paid < orderToPay.total) {
+      showError('Jumlah bayar harus >= total tagihan');
+      return;
+    }
+
+    setProcessingPayment(true);
+    try {
+      await transactionService.create({
+        orderUuid: orderToPay.uuid,
+        paymentMethod,
+        amountPaid: paid,
+        notes: paymentNotes || undefined,
+      });
+      showSuccess('Pembayaran berhasil diproses!');
+      closePaymentDialog();
+      fetchOrders();
+    } catch (error) {
+      showError(error);
+    } finally {
+      setProcessingPayment(false);
+    }
+  };
+
+  const changeAmount = orderToPay ? Math.max(0, parseFloat(paidAmount || '0') - orderToPay.total) : 0;
 
   const getStatusBadge = (status: OrderStatus) => {
     const option = statusOptions.find(o => o.value === status);
@@ -189,6 +255,16 @@ export default function OrderList() {
   const tableActions: TableActions<Order> = {
     onView: openViewDialog,
     onDelete: isOwnerOrAdmin ? confirmDelete : undefined,
+    customActions: [
+      {
+        label: 'Bayar',
+        onClick: openPaymentDialog,
+        icon: <CreditCard className="h-4 w-4" />,
+        variant: 'default',
+        className: 'bg-emerald-600 hover:bg-emerald-700 text-white',
+        showCondition: (order: Order) => !['CONFIRMED', 'COMPLETED', 'CANCELLED'].includes(order.status),
+      },
+    ],
   };
 
   return (
@@ -340,6 +416,108 @@ export default function OrderList() {
         onConfirm={handleDelete}
         loading={deleting}
       />
+
+      {/* Payment Dialog */}
+      <Dialog open={paymentDialogOpen} onOpenChange={closePaymentDialog}>
+        <DialogContent className="max-w-md" preventInteractOutside>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5 text-emerald-600" />
+              Proses Pembayaran
+            </DialogTitle>
+            <DialogDescription>Order #{orderToPay?.orderNumber}</DialogDescription>
+          </DialogHeader>
+          
+          {orderToPay && (
+            <div className="space-y-4">
+              {/* Order Summary */}
+              <div className="bg-zinc-50 dark:bg-zinc-900 rounded-lg p-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Tipe</span>
+                  <span className="font-medium">{typeLabels[orderToPay.type]}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Meja</span>
+                  <span className="font-medium">{orderToPay.table ? `Meja ${orderToPay.table.number}` : '-'}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Items</span>
+                  <span className="font-medium">{orderToPay.items?.length || 0} item</span>
+                </div>
+                <div className="flex justify-between text-lg font-bold border-t pt-2 mt-2">
+                  <span>Total Tagihan</span>
+                  <span className="text-emerald-600">{formatCurrency(orderToPay.total)}</span>
+                </div>
+              </div>
+
+              {/* Payment Method */}
+              <div className="space-y-2">
+                <Label>Metode Pembayaran <span className="text-red-500">*</span></Label>
+                <Select value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as PaymentMethod)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {paymentMethodOptions.map(pm => (
+                      <SelectItem key={pm.value} value={pm.value}>{pm.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Paid Amount */}
+              <div className="space-y-2">
+                <Label>Jumlah Bayar <span className="text-red-500">*</span></Label>
+                <MoneyInput
+                  placeholder="Masukkan jumlah bayar"
+                  value={paidAmount}
+                  onValueChange={(values) => setPaidAmount(values.value)}
+                />
+                {(parseFloat(paidAmount) < orderToPay.total && paidAmount !== '') && (
+                  <p className="text-xs text-red-500">Jumlah bayar kurang dari total tagihan</p>
+                )}
+              </div>
+
+              {/* Change Amount */}
+              {changeAmount > 0 && (
+                <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 rounded-lg p-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Kembalian</span>
+                    <span className="text-lg font-bold text-emerald-600">{formatCurrency(changeAmount)}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Notes */}
+              <div className="space-y-2">
+                <Label>Catatan (opsional)</Label>
+                <Input
+                  placeholder="Catatan transaksi..."
+                  value={paymentNotes}
+                  onChange={(e) => setPaymentNotes(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={closePaymentDialog} disabled={processingPayment}>
+              Batal
+            </Button>
+            <Button 
+              onClick={handlePayment} 
+              disabled={processingPayment || !paidAmount || parseFloat(paidAmount) < (orderToPay?.total || 0)}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              {processingPayment ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Memproses...</>
+              ) : (
+                <><CreditCard className="mr-2 h-4 w-4" /> Proses Pembayaran</>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

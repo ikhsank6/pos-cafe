@@ -172,10 +172,10 @@ export class TransactionsService {
                 },
             });
 
-            // Update order status to COMPLETED
+            // Update order status to CONFIRMED (paid but still need to be prepared/served)
             await prisma.order.update({
                 where: { id: order.id },
-                data: { status: OrderStatus.COMPLETED },
+                data: { status: OrderStatus.CONFIRMED },
             });
 
             // Free up table if DINE_IN

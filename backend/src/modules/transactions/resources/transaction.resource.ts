@@ -10,15 +10,19 @@ export class TransactionResource {
     createdAt: string;
     updatedAt: string;
     createdBy: string | null;
-    order: {
-        uuid: string;
-        orderNumber: string;
-        status: string;
-        table?: {
+        order?: {
             uuid: string;
-            number: string;
+            orderNumber: string;
+            status: string;
+            subtotal: number;
+            discount: number;
+            tax: number;
+            total: number;
+            table?: {
+                uuid: string;
+                number: string;
+            } | null;
         } | null;
-    } | null;
 
     constructor(transaction: any) {
         this.uuid = transaction.uuid;
@@ -37,6 +41,10 @@ export class TransactionResource {
             uuid: transaction.order.uuid,
             orderNumber: transaction.order.orderNumber,
             status: transaction.order.status,
+            subtotal: Number(transaction.order.subtotal),
+            discount: Number(transaction.order.discount),
+            tax: Number(transaction.order.tax),
+            total: Number(transaction.order.total),
             table: transaction.order.table ? {
                 uuid: transaction.order.table.uuid,
                 number: transaction.order.table.number,
