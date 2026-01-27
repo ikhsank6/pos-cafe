@@ -7,6 +7,7 @@ import { RotateCcw } from 'lucide-react';
 import { showSuccess, showError, formatDateTime, formatCurrency } from '@/lib/utils';
 import { useTable } from '@/hooks/useTable';
 import { DeleteDialog } from '@/components/ui/delete-dialog';
+import { AuditInfo } from '@/components/ui/audit-info';
 import {
   Dialog,
   DialogContent,
@@ -143,10 +144,15 @@ export default function TransactionList() {
       cell: (transaction) => getStatusBadge(transaction.status),
     },
     {
-      key: 'createdAt',
-      header: 'Waktu',
+      key: 'audit',
+      header: 'Audit',
       cell: (transaction) => (
-        <span className="text-xs text-muted-foreground">{formatDateTime(transaction.createdAt)}</span>
+        <AuditInfo 
+          createdAt={transaction.createdAt}
+          createdBy={transaction.createdBy}
+          updatedAt={transaction.updatedAt}
+          updatedBy={transaction.updatedBy}
+        />
       ),
     },
   ];

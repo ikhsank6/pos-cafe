@@ -267,6 +267,8 @@ export default function UserList() {
         <AuditInfo 
           createdAt={user.createdAt} 
           createdBy={user.createdBy} 
+          updatedAt={user.updatedAt}
+          updatedBy={user.updatedBy}
         />
       ),
     },

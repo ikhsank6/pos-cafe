@@ -45,6 +45,7 @@ export class OrderResource {
     createdAt: string;
     updatedAt: string;
     createdBy: string | null;
+    updatedBy: string | null;
     table: {
         uuid: string;
         number: string;
@@ -74,6 +75,7 @@ export class OrderResource {
         this.createdAt = order.createdAt?.toISOString?.() || order.createdAt;
         this.updatedAt = order.updatedAt?.toISOString?.() || order.updatedAt;
         this.createdBy = order.createdBy || null;
+        this.updatedBy = order.updatedBy || null;
 
         this.table = order.table ? {
             uuid: order.table.uuid,
@@ -113,6 +115,7 @@ export class OrderResource {
             createdAt: this.createdAt,
             updatedAt: this.updatedAt,
             createdBy: this.createdBy,
+            updatedBy: this.updatedBy,
             table: this.table,
             customer: this.customer,
             discountCode: this.discountCode,

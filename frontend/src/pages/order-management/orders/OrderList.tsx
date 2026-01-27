@@ -13,6 +13,7 @@ import { useTable } from '@/hooks/useTable';
 import { useAuthStore } from '@/stores/auth.store';
 import { DeleteDialog } from '@/components/ui/delete-dialog';
 import { MoneyInput } from '@/components/ui/money-input';
+import { AuditInfo } from '@/components/ui/audit-info';
 import {
   Dialog,
   DialogContent,
@@ -243,11 +244,17 @@ export default function OrderList() {
       header: 'Status',
       cell: (order) => getStatusBadge(order.status),
     },
+
     {
-      key: 'createdAt',
-      header: 'Waktu',
+      key: 'audit',
+      header: 'Audit',
       cell: (order) => (
-        <span className="text-xs text-muted-foreground">{formatDateTime(order.createdAt)}</span>
+        <AuditInfo 
+          createdAt={order.createdAt}
+          createdBy={order.createdBy}
+          updatedAt={order.updatedAt}
+          updatedBy={order.updatedBy}
+        />
       ),
     },
   ];

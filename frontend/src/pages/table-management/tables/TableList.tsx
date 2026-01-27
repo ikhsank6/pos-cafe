@@ -9,6 +9,7 @@ import { Plus } from 'lucide-react';
 import { showSuccess, showError } from '@/lib/utils';
 import { useTable } from '@/hooks/useTable';
 import { DeleteDialog } from '@/components/ui/delete-dialog';
+import { AuditInfo } from '@/components/ui/audit-info';
 import { 
   TableViewDrawer, 
   TableFormDrawer, 
@@ -185,6 +186,18 @@ export default function TableList() {
         <Badge variant={table.isActive ? 'default' : 'secondary'}>
           {table.isActive ? 'Active' : 'Inactive'}
         </Badge>
+      ),
+    },
+    {
+      key: 'audit',
+      header: 'Audit',
+      cell: (table) => (
+        <AuditInfo 
+          createdAt={table.createdAt}
+          createdBy={table.createdBy}
+          updatedAt={table.updatedAt}
+          updatedBy={table.updatedBy}
+        />
       ),
     },
   ];

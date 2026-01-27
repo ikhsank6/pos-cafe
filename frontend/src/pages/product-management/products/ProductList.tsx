@@ -7,11 +7,12 @@ import { DataTable, type Column, type TableActions } from '@/components/ui/data-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { showSuccess, showError, formatCurrency } from '@/lib/utils';
+import { showSuccess, showError, formatCurrency, formatDateTime } from '@/lib/utils';
 import { type Media } from '@/components/ui/image-upload';
 import { env } from '@/config/env';
 import { useTable } from '@/hooks/useTable';
 import { DeleteDialog } from '@/components/ui/delete-dialog';
+import { AuditInfo } from '@/components/ui/audit-info';
 import { 
   ProductViewDrawer, 
   ProductFormDrawer, 
@@ -239,6 +240,18 @@ export default function ProductList() {
         <Badge variant={product.isActive ? 'default' : 'secondary'}>
           {product.isActive ? 'Active' : 'Inactive'}
         </Badge>
+      ),
+    },
+    {
+      key: 'audit',
+      header: 'Audit',
+      cell: (product) => (
+        <AuditInfo 
+          createdAt={product.createdAt}
+          createdBy={product.createdBy}
+          updatedAt={product.updatedAt}
+          updatedBy={product.updatedBy}
+        />
       ),
     },
   ];

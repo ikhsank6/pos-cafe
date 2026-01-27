@@ -9,6 +9,7 @@ import { Plus, Star } from 'lucide-react';
 import { showSuccess, showError } from '@/lib/utils';
 import { useTable } from '@/hooks/useTable';
 import { DeleteDialog } from '@/components/ui/delete-dialog';
+import { AuditInfo } from '@/components/ui/audit-info';
 import { 
   CustomerViewDrawer, 
   CustomerFormDrawer, 
@@ -178,6 +179,18 @@ export default function CustomerList() {
         <Badge variant={customer.isActive ? 'default' : 'secondary'}>
           {customer.isActive ? 'Active' : 'Inactive'}
         </Badge>
+      ),
+    },
+    {
+      key: 'audit',
+      header: 'Audit',
+      cell: (customer) => (
+        <AuditInfo 
+          createdAt={customer.createdAt}
+          createdBy={customer.createdBy}
+          updatedAt={customer.updatedAt}
+          updatedBy={customer.updatedBy}
+        />
       ),
     },
   ];

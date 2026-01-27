@@ -10,6 +10,7 @@ export class TransactionResource {
     createdAt: string;
     updatedAt: string;
     createdBy: string | null;
+    updatedBy: string | null;
         order?: {
             uuid: string;
             orderNumber: string;
@@ -36,6 +37,7 @@ export class TransactionResource {
         this.createdAt = transaction.createdAt?.toISOString?.() || transaction.createdAt;
         this.updatedAt = transaction.updatedAt?.toISOString?.() || transaction.updatedAt;
         this.createdBy = transaction.createdBy || null;
+        this.updatedBy = transaction.updatedBy || null;
 
         this.order = transaction.order ? {
             uuid: transaction.order.uuid,
@@ -69,6 +71,7 @@ export class TransactionResource {
             createdAt: this.createdAt,
             updatedAt: this.updatedAt,
             createdBy: this.createdBy,
+            updatedBy: this.updatedBy,
             order: this.order,
         };
     }

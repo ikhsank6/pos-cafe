@@ -6,9 +6,10 @@ import { DataTable, type Column, type TableActions } from '@/components/ui/data-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { showSuccess, showError, formatDateTime } from '@/lib/utils';
+import { showSuccess, showError } from '@/lib/utils';
 import { useTable } from '@/hooks/useTable';
 import { DeleteDialog } from '@/components/ui/delete-dialog';
+import { AuditInfo } from '@/components/ui/audit-info';
 import { 
   CategoryViewDrawer, 
   CategoryFormDrawer, 
@@ -160,10 +161,15 @@ export default function CategoryList() {
       ),
     },
     {
-      key: 'createdAt',
-      header: 'Dibuat',
+      key: 'audit',
+      header: 'Audit',
       cell: (category) => (
-        <span className="text-sm text-muted-foreground">{formatDateTime(category.createdAt)}</span>
+        <AuditInfo 
+          createdAt={category.createdAt}
+          createdBy={category.createdBy}
+          updatedAt={category.updatedAt}
+          updatedBy={category.updatedBy}
+        />
       ),
     },
   ];

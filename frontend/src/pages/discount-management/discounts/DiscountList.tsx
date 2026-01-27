@@ -9,6 +9,7 @@ import { Plus, Percent, DollarSign } from 'lucide-react';
 import { showSuccess, showError, formatCurrency } from '@/lib/utils';
 import { useTable } from '@/hooks/useTable';
 import { DeleteDialog } from '@/components/ui/delete-dialog';
+import { AuditInfo } from '@/components/ui/audit-info';
 import { 
   DiscountViewDrawer, 
   DiscountFormDrawer, 
@@ -245,6 +246,18 @@ export default function DiscountList() {
         <Badge variant={discount.isActive ? 'default' : 'secondary'}>
           {discount.isActive ? 'Active' : 'Inactive'}
         </Badge>
+      ),
+    },
+    {
+      key: 'audit',
+      header: 'Audit',
+      cell: (discount) => (
+        <AuditInfo 
+          createdAt={discount.createdAt}
+          createdBy={discount.createdBy}
+          updatedAt={discount.updatedAt}
+          updatedBy={discount.updatedBy}
+        />
       ),
     },
   ];
