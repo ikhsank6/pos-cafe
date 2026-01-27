@@ -22,6 +22,7 @@ import { CustomersModule } from './modules/customers/customers.module';
 import { DiscountsModule } from './modules/discounts/discounts.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 import { RequestContextInterceptor } from './common/interceptors/request-context.interceptor';
 import { AppController } from './app.controller';
@@ -51,6 +52,7 @@ import { AppController } from './app.controller';
     DiscountsModule,
     OrdersModule,
     TransactionsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [
