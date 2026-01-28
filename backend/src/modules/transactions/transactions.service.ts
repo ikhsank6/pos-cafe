@@ -288,6 +288,16 @@ export class TransactionsService {
                 }
             }
 
+            // Return discount usage if exists
+            if (transaction.order && transaction.order.discountId) {
+                await prisma.discount.update({
+                    where: { id: transaction.order.discountId },
+                    data: {
+                        usageCount: { decrement: 1 },
+                    },
+                });
+            }
+
             return { message: 'Refund berhasil.', data: new TransactionResource(updatedTransaction) };
         });
     }

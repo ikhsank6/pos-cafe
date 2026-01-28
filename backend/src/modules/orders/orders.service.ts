@@ -531,6 +531,14 @@ export class OrdersService {
                 });
             }
 
+            // Return discount usage if exists
+            if (order.discountId) {
+                await prisma.discount.update({
+                    where: { id: order.discountId },
+                    data: { usageCount: { decrement: 1 } },
+                });
+            }
+
             return { message: 'Order berhasil dihapus.', data: {} };
         });
     }

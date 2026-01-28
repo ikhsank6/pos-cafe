@@ -212,7 +212,7 @@ export default function DiscountList() {
       header: 'Penggunaan',
       cell: (discount) => (
         <span className="text-sm">
-          {discount.usedCount}{discount.usageLimit ? `/${discount.usageLimit}` : ''}
+          {discount.usageCount}{discount.usageLimit ? `/${discount.usageLimit}` : ''}
         </span>
       ),
     },

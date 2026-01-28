@@ -30,7 +30,7 @@ import { customerService, type Customer } from '@/services/customer.service';
 import { categoryService, type Category } from '@/services/category.service';
 import { discountService, type Discount } from '@/services/discount.service';
 import { settingsService, type TaxSettings } from '@/services/settings.service';
-import { formatCurrency, showSuccess, showError } from '@/lib/utils';
+import { formatCurrency, showSuccess, showError, cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   AlertDialog,
@@ -268,6 +268,7 @@ export default function CreateOrder() {
               placeholder="Cari menu..." 
               value={searchProduct}
               onChange={(e) => setSearchProduct(e.target.value)}
+              onClear={() => setSearchProduct('')}
             />
           </div>
 
@@ -296,91 +297,107 @@ export default function CreateOrder() {
         <div className="flex-1 min-h-0 relative">
           <ScrollArea className="h-full">
             <div className="p-6">
-              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-                {filteredProducts.map(product => {
-                  const addedQty = fields.find(f => f.productUuid === product.uuid) ? form.watch(`items.${fields.findIndex(f => f.productUuid === product.uuid)}.quantity`) : 0;
-                  return (
-                    <div 
-                      key={product.uuid} 
-                      onClick={() => product.stock > 0 && handleAddProduct(product)}
-                      className={`group flex flex-col bg-white dark:bg-zinc-900 rounded-xl border transition-all cursor-pointer ${
-                        product.stock <= 0 ? 'opacity-60 grayscale cursor-not-allowed' : 
-                        addedQty > 0 ? 'border-zinc-900 dark:border-white ring-1 ring-zinc-900 dark:ring-white' : 'border-zinc-100 dark:border-zinc-800 hover:border-zinc-300'
-                      }`}
-                    >
-                      <div className="aspect-4/3 bg-zinc-50 dark:bg-zinc-800/50 rounded-t-xl overflow-hidden relative">
-                        {product.media?.path ? (
-                          <img 
-                            src={`${env.API_URL}${product.media.path}`} 
-                            alt={product.name} 
-                            className="w-full h-full object-cover" 
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-zinc-200 dark:text-zinc-800">
-                            {product.name.charAt(0)}
-                          </div>
+              {filteredProducts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center p-12 text-center">
+                  <EmptyState 
+                    title="Menu Tidak Ditemukan" 
+                    description={searchProduct ? `Tidak ada menu yang sesuai dengan "${searchProduct}"` : "Tidak ada menu di kategori ini."}
+                  />
+                  {searchProduct && (
+                    <Button variant="outline" size="sm" className="mt-4" onClick={() => setSearchProduct('')}>
+                      Hapus Pencarian
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                  {filteredProducts.map(product => {
+                    const itemIndex = fields.findIndex(f => f.productUuid === product.uuid);
+                    const addedQty = itemIndex > -1 ? form.watch(`items.${itemIndex}.quantity`) : 0;
+                    
+                    return (
+                      <div 
+                        key={product.uuid} 
+                        onClick={() => product.stock > 0 && handleAddProduct(product)}
+                        className={cn(
+                          "group flex flex-col bg-white dark:bg-zinc-900 rounded-xl border transition-all cursor-pointer overflow-hidden shadow-sm",
+                          product.stock <= 0 ? "opacity-60 grayscale cursor-not-allowed" : 
+                          addedQty > 0 ? "border-zinc-900 dark:border-white ring-1 ring-zinc-900 dark:ring-white shadow-md" : "border-zinc-100 dark:border-zinc-800 hover:border-zinc-300"
                         )}
-                        {product.stock <= 0 && (
-                          <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] flex items-center justify-center">
-                            <span className="bg-rose-500 text-white text-[10px] font-black px-2 py-1 rounded uppercase tracking-wider">Stok Habis</span>
-                          </div>
-                        )}
-                        {addedQty > 0 && (
-                          <div className="absolute top-2 right-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-[10px] font-bold h-6 w-6 rounded-full flex items-center justify-center shadow-lg">
-                            {addedQty}
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="p-3 flex flex-col flex-1 gap-2">
-                        <div className="min-h-10">
-                          <h3 className="font-bold text-sm leading-tight text-zinc-800 dark:text-zinc-200 line-clamp-2">{product.name}</h3>
-                          <div className="flex justify-between items-center mt-0.5">
-                            <p className="text-[10px] text-zinc-400 font-medium uppercase">{product.category?.name || 'Umum'}</p>
-                            <p className={`text-[10px] font-bold ${product.stock <= 5 ? 'text-rose-500' : 'text-zinc-400'}`}>
-                              Stok: {product.stock}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="mt-auto pt-2">
-                          <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mb-3">{formatCurrency(Number(product.price))}</p>
-                          
-                          {addedQty > 0 ? (
-                            <div onClick={(e) => e.stopPropagation()}>
-                              <QuantityControl
-                                value={addedQty}
-                                onChange={(val) => {
-                                  if (val > product.stock) {
-                                    showError(`Stok produk ${product.name} tidak mencukupi.`);
-                                    return;
-                                  }
-                                  const idx = fields.findIndex(f => f.productUuid === product.uuid);
-                                  form.setValue(`items.${idx}.quantity`, val);
-                                }}
-                                onRemove={() => {
-                                  const idx = fields.findIndex(f => f.productUuid === product.uuid);
-                                  remove(idx);
-                                }}
-                              />
-                            </div>
+                      >
+                        <div className="aspect-[4/3] bg-zinc-50 dark:bg-zinc-800/50 overflow-hidden relative">
+                          {product.media?.path ? (
+                            <img 
+                              src={`${env.API_URL}${product.media.path}`} 
+                              alt={product.name} 
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                            />
                           ) : (
-                            <div className="h-9 w-full rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400 group-hover:bg-zinc-900 group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-zinc-900 transition-colors">
-                              <Plus size={16} strokeWidth={3} />
+                            <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-zinc-200 dark:text-zinc-800">
+                              {product.name.charAt(0)}
+                            </div>
+                          )}
+                          
+                          {product.stock <= 0 && (
+                            <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] flex items-center justify-center">
+                              <span className="bg-rose-500 text-white text-[10px] font-black px-2 py-1 rounded uppercase tracking-wider">Stok Habis</span>
+                            </div>
+                          )}
+
+                          {addedQty > 0 && (
+                            <div className="absolute top-2 right-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-[10px] font-bold h-6 w-6 rounded-full flex items-center justify-center shadow-lg">
+                              {addedQty}
                             </div>
                           )}
                         </div>
+
+                        <div className="p-3 flex flex-col flex-1 gap-2">
+                          <div className="min-h-10">
+                            <h3 className="font-bold text-sm leading-tight text-zinc-800 dark:text-zinc-200 line-clamp-2">{product.name}</h3>
+                            <div className="flex justify-between items-center mt-0.5">
+                              <p className="text-[10px] text-zinc-400 font-medium uppercase tracking-tight">{product.category?.name || 'Umum'}</p>
+                              <p className={cn(
+                                "text-[10px] font-bold",
+                                product.stock <= 5 ? "text-rose-500" : "text-zinc-400"
+                              )}>
+                                Stok: {product.stock}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="mt-auto pt-2">
+                            <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50 mb-3 text-left">{formatCurrency(Number(product.price))}</p>
+                            
+                            {addedQty > 0 ? (
+                              <div onClick={(e) => e.stopPropagation()}>
+                                <QuantityControl
+                                  value={addedQty}
+                                  onChange={(val) => {
+                                    if (product && val > product.stock) {
+                                      showError(`Stok produk ${product.name} tidak mencukupi.`);
+                                      return;
+                                    }
+                                    form.setValue(`items.${itemIndex}.quantity`, val);
+                                  }}
+                                  onRemove={() => remove(itemIndex)}
+                                />
+                              </div>
+                            ) : (
+                              <div className="h-9 w-full rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400 group-hover:bg-zinc-900 group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-zinc-900 transition-colors">
+                                <Plus size={16} strokeWidth={3} />
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </ScrollArea>
         </div>
       </main>
-
-      {/* SUMMARY SIDEBAR */}
       <aside className="w-[360px] flex flex-col bg-white dark:bg-zinc-900">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onFormSubmit)} className="flex flex-col h-full bg-white dark:bg-zinc-900">

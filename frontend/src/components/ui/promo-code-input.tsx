@@ -35,13 +35,27 @@ export function PromoCodeInput({
     <div className={cn("space-y-2", className)}>
       {/* Input row */}
       <div className="flex gap-2">
-        <input
-          placeholder={placeholder}
-          className="flex-1 h-9 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 text-[10px] font-bold uppercase outline-none focus:ring-1 focus:ring-zinc-200 dark:focus:ring-zinc-700"
-          value={value}
-          onChange={(e) => onChange(e.target.value.toUpperCase())}
-          disabled={disabled || !!appliedCode}
-        />
+        <div className="flex-1 relative">
+          <input
+            placeholder={placeholder}
+            className={cn(
+              "w-full h-9 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg pl-3 text-[10px] font-bold uppercase outline-none focus:ring-1 focus:ring-zinc-200 dark:focus:ring-zinc-700",
+              value && !appliedCode && "pr-8"
+            )}
+            value={value}
+            onChange={(e) => onChange(e.target.value.toUpperCase())}
+            disabled={disabled || !!appliedCode}
+          />
+          {value && !appliedCode && !disabled && (
+            <button
+              type="button"
+              onClick={() => onChange('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-full transition-colors"
+            >
+              <X size={12} className="text-zinc-400" />
+            </button>
+          )}
+        </div>
         <Button
           type="button"
           size="sm"

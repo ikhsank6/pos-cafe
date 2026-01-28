@@ -13,7 +13,7 @@ export interface Discount {
   minPurchase?: number;
   maxDiscount?: number;
   usageLimit?: number;
-  usedCount: number;
+  usageCount: number;
   startDate?: string;
   endDate?: string;
   isActive: boolean;
