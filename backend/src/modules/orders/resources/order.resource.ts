@@ -61,6 +61,8 @@ export class OrderResource {
         code: string;
         name: string;
     } | null;
+    isPaid: boolean;
+    transactionNo: string | null;
     items: OrderItemResource[];
 
     constructor(order: any) {
@@ -97,6 +99,10 @@ export class OrderResource {
         } : null;
 
         this.items = order.orderItems ? OrderItemResource.collection(order.orderItems) : [];
+        
+        // Check if paid
+        this.isPaid = order.transactions && order.transactions.length > 0;
+        this.transactionNo = this.isPaid ? order.transactions[0].transactionNo : null;
     }
 
     static collection(orders: any[]): OrderResource[] {
@@ -109,6 +115,8 @@ export class OrderResource {
             orderNumber: this.orderNumber,
             type: this.type,
             status: this.status,
+            isPaid: this.isPaid,
+            transactionNo: this.transactionNo,
             subtotal: this.subtotal,
             discount: this.discount,
             tax: this.tax,

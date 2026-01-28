@@ -82,6 +82,10 @@ export class OrdersService {
                         where: { deletedAt: null },
                         include: { product: true },
                     },
+                    transactions: {
+                        where: { status: 'COMPLETED', deletedAt: null },
+                        take: 1,
+                    },
                 },
             }),
             this.prisma.order.count({ where }),
@@ -105,6 +109,10 @@ export class OrdersService {
                 orderItems: {
                     where: { deletedAt: null },
                     include: { product: true },
+                },
+                transactions: {
+                    where: { status: 'COMPLETED', deletedAt: null },
+                    take: 1,
                 },
             },
         });

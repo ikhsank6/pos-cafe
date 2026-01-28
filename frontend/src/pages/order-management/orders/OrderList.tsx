@@ -58,6 +58,7 @@ export default function OrderList() {
   const navigate = useNavigate();
   const user = useAuthStore(state => state.user);
   const isOwnerOrAdmin = user?.activeRole?.code === 'ADMIN' || user?.activeRole?.code === 'OWNER';
+  const isCashier = isOwnerOrAdmin || user?.activeRole?.code === 'CASHIER';
   const {
     data: orders,
     loading,
@@ -235,7 +236,15 @@ export default function OrderList() {
       key: 'total',
       header: 'Total',
       cell: (order) => (
-        <span className="font-medium">{formatCurrency(order.total)}</span>
+        <div className="flex flex-col">
+          <span className="font-medium">{formatCurrency(order.total)}</span>
+          {order.isPaid && (
+            <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
+              TERBAYAR
+            </span>
+          )}
+        </div>
       ),
     },
     {
@@ -268,7 +277,7 @@ export default function OrderList() {
         icon: <CreditCard className="h-4 w-4" />,
         variant: 'default',
         className: 'bg-emerald-600 hover:bg-emerald-700 text-white',
-        showCondition: (order: Order) => !['CONFIRMED', 'COMPLETED', 'CANCELLED'].includes(order.status),
+        showCondition: (order: Order) => isCashier && !order.isPaid && !['COMPLETED', 'CANCELLED'].includes(order.status),
       },
     ],
   };
@@ -394,8 +403,13 @@ export default function OrderList() {
                     <span>{formatCurrency(selectedOrder.tax)}</span>
                   </div>
                 )}
-                <div className="flex justify-between font-bold border-t pt-1">
-                  <span>Total</span>
+                <div className="flex justify-between font-bold border-t pt-1 items-center">
+                  <div className="flex items-center gap-2">
+                    <span>Total</span>
+                    {selectedOrder.isPaid && (
+                      <Badge className="bg-emerald-600 text-[9px] h-4">TERBAYAR</Badge>
+                    )}
+                  </div>
                   <span>{formatCurrency(selectedOrder.total)}</span>
                 </div>
               </div>

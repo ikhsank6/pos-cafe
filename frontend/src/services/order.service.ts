@@ -42,6 +42,8 @@ export interface Order {
   discount: number;
   tax: number;
   total: number;
+  isPaid: boolean;
+  transactionNo?: string | null;
   notes?: string;
   status: OrderStatus;
   createdAt: string;
