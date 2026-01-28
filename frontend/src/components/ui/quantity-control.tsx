@@ -15,21 +15,21 @@ export interface QuantityControlProps {
 
 const sizeClasses = {
   sm: {
-    button: 'h-6 w-6',
+    button: 'h-6 w-8',
     icon: 12,
-    text: 'text-[10px] w-6',
+    text: 'text-[10px]',
     container: 'rounded-md',
   },
   md: {
-    button: 'h-8 w-8',
+    button: 'h-8 w-10',
     icon: 14,
-    text: 'text-xs w-8',
+    text: 'text-xs',
     container: 'rounded-lg',
   },
   lg: {
-    button: 'h-10 w-10',
+    button: 'h-10 w-12',
     icon: 16,
-    text: 'text-sm w-10',
+    text: 'text-sm',
     container: 'rounded-lg',
   },
 };
@@ -77,7 +77,7 @@ export function QuantityControl({
       <button
         type="button"
         className={cn(
-          "flex items-center justify-center hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors",
+          "flex items-center justify-center hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors shrink-0",
           sizes.button,
           disabled && "opacity-50 cursor-not-allowed"
         )}
@@ -92,7 +92,7 @@ export function QuantityControl({
       </button>
       
       <div className={cn(
-        "text-center font-bold text-zinc-800 dark:text-zinc-200",
+        "text-center font-bold text-zinc-800 dark:text-zinc-200 flex-1 flex items-center justify-center min-w-6",
         sizes.text
       )}>
         {value}
@@ -101,7 +101,7 @@ export function QuantityControl({
       <button
         type="button"
         className={cn(
-          "flex items-center justify-center hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors",
+          "flex items-center justify-center hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors shrink-0",
           sizes.button,
           (!canIncrease || disabled) && "opacity-50 cursor-not-allowed"
         )}

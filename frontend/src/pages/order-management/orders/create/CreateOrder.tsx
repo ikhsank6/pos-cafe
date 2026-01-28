@@ -325,7 +325,7 @@ export default function CreateOrder() {
                           addedQty > 0 ? "border-zinc-900 dark:border-white ring-1 ring-zinc-900 dark:ring-white shadow-md" : "border-zinc-100 dark:border-zinc-800 hover:border-zinc-300"
                         )}
                       >
-                        <div className="aspect-[4/3] bg-zinc-50 dark:bg-zinc-800/50 overflow-hidden relative">
+                        <div className="aspect-4/3 bg-zinc-50 dark:bg-zinc-800/50 overflow-hidden relative">
                           {product.media?.path ? (
                             <img 
                               src={`${env.API_URL}${product.media.path}`} 
@@ -372,6 +372,7 @@ export default function CreateOrder() {
                               <div onClick={(e) => e.stopPropagation()}>
                                 <QuantityControl
                                   value={addedQty}
+                                  className="w-full dark:bg-zinc-950/50 dark:border-zinc-800"
                                   onChange={(val) => {
                                     if (product && val > product.stock) {
                                       showError(`Stok produk ${product.name} tidak mencukupi.`);
@@ -383,7 +384,7 @@ export default function CreateOrder() {
                                 />
                               </div>
                             ) : (
-                              <div className="h-9 w-full rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400 group-hover:bg-zinc-900 group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-zinc-900 transition-colors">
+                              <div className="h-9 w-full rounded-xl bg-zinc-100 dark:bg-zinc-800/50 flex items-center justify-center text-zinc-400 group-hover:bg-zinc-900 group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-zinc-900 transition-colors">
                                 <Plus size={16} strokeWidth={3} />
                               </div>
                             )}
