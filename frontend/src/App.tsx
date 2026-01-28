@@ -29,6 +29,7 @@ import DiscountList from "@/pages/discount-management/discounts/DiscountList";
 import OrderList from "@/pages/order-management/orders/OrderList";
 import CreateOrder from "@/pages/order-management/orders/create/CreateOrder";
 import TransactionList from "@/pages/transaction-management/transactions/TransactionList";
+import SettingsPage from "@/pages/settings/Settings";
 import { useAuthStore } from "@/stores/auth.store";
 import { ThemeProvider } from "@/components/theme-provider";
 
@@ -244,6 +245,7 @@ export default function App() {
             />
 
             <Route path="profile" element={<Profile />} />
+            <Route path="settings" element={<SettingsPage />} />
           </Route>
 
           {/* Legacy dashboard routes - redirect to admin */}

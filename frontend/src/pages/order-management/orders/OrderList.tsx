@@ -35,7 +35,6 @@ const statusOptions: { value: OrderStatus; label: string; color: string }[] = [
   { value: 'CONFIRMED', label: 'Confirmed', color: 'bg-blue-500' },
   { value: 'PREPARING', label: 'Preparing', color: 'bg-orange-500' },
   { value: 'READY', label: 'Ready', color: 'bg-green-500' },
-  { value: 'SERVED', label: 'Served', color: 'bg-teal-500' },
   { value: 'COMPLETED', label: 'Completed', color: 'bg-gray-500' },
   { value: 'CANCELLED', label: 'Cancelled', color: 'bg-red-500' },
 ];

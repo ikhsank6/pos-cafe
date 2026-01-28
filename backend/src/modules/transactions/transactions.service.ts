@@ -108,9 +108,12 @@ export class TransactionsService {
 
     async create(createTransactionDto: CreateTransactionDto, createdBy?: string) {
         return this.prisma.$transaction(async (prisma) => {
-            // Get order
+            // Get order with items
             const order = await prisma.order.findFirst({
                 where: { uuid: createTransactionDto.orderUuid, deletedAt: null },
+                include: {
+                    orderItems: true,
+                },
             });
 
             if (!order) {
@@ -178,6 +181,27 @@ export class TransactionsService {
                 data: { status: OrderStatus.CONFIRMED },
             });
 
+            // Update product stock and record movement
+            for (const item of order.orderItems) {
+                await prisma.product.update({
+                    where: { id: item.productId },
+                    data: {
+                        stock: { decrement: item.quantity },
+                    },
+                });
+
+                await prisma.stockMovement.create({
+                    data: {
+                        productId: item.productId,
+                        type: 'OUT',
+                        quantity: item.quantity,
+                        notes: `Pembayaran Order: ${transactionNo}`,
+                        reference: transactionNo,
+                        createdBy,
+                    },
+                });
+            }
+
             // Free up table if DINE_IN
             if (order.tableId) {
                 const activeOrders = await prisma.order.count({
@@ -205,7 +229,11 @@ export class TransactionsService {
         return this.prisma.$transaction(async (prisma) => {
             const transaction = await prisma.transaction.findFirst({
                 where: { uuid, deletedAt: null },
-                include: { order: true },
+                include: { 
+                    order: {
+                        include: { orderItems: true }
+                    } 
+                },
             });
 
             if (!transaction) {
@@ -236,6 +264,29 @@ export class TransactionsService {
                 where: { id: transaction.orderId },
                 data: { status: OrderStatus.CANCELLED },
             });
+
+            // Return stock and record movement
+            if (transaction.order && transaction.order.orderItems) {
+                for (const item of transaction.order.orderItems) {
+                    await prisma.product.update({
+                        where: { id: item.productId },
+                        data: {
+                            stock: { increment: item.quantity },
+                        },
+                    });
+
+                    await prisma.stockMovement.create({
+                        data: {
+                            productId: item.productId,
+                            type: 'RETURN',
+                            quantity: item.quantity,
+                            notes: `Refund Transaksi: ${transaction.transactionNo}`,
+                            reference: transaction.transactionNo,
+                            createdBy: updatedBy,
+                        },
+                    });
+                }
+            }
 
             return { message: 'Refund berhasil.', data: new TransactionResource(updatedTransaction) };
         });

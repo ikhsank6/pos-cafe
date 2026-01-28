@@ -4,10 +4,14 @@ import { CreateOrderDto, UpdateOrderStatusDto, UpdateOrderItemStatusDto, AddOrde
 import { buildPaginatedResponse, calculateSkip } from '../../common/utils/pagination.util';
 import { OrderResource } from './resources/order.resource';
 import { OrderType, OrderStatus, OrderItemStatus } from '@prisma/client';
+import { SettingsService } from '../settings/settings.service';
 
 @Injectable()
 export class OrdersService {
-    constructor(private prisma: PrismaService) { }
+    constructor(
+        private prisma: PrismaService,
+        private settingsService: SettingsService,
+    ) { }
 
     private async generateOrderNumber(): Promise<string> {
         const today = new Date();
@@ -166,6 +170,10 @@ export class OrdersService {
                     throw new BadRequestException(`Produk ${product.name} tidak aktif.`);
                 }
 
+                if (product.stock < item.quantity) {
+                    throw new BadRequestException(`Stok produk ${product.name} tidak mencukupi (Stok: ${product.stock}).`);
+                }
+
                 const itemSubtotal = Number(product.price) * item.quantity;
                 subtotal += itemSubtotal;
 
@@ -215,9 +223,10 @@ export class OrdersService {
                 }
             }
 
-            // Calculate tax (10% PPN)
-            const TAX_RATE = 0.10;
-            const tax = (subtotal - discountAmount) * TAX_RATE;
+            // Calculate tax
+            const taxSettings = await this.settingsService.getTaxSettings();
+            const taxRate = taxSettings.taxEnabled ? taxSettings.taxRate : 0;
+            const tax = (subtotal - discountAmount) * (taxRate / 100);
             const total = subtotal - discountAmount + tax;
 
             // Generate order number
@@ -235,6 +244,7 @@ export class OrdersService {
                     subtotal,
                     discount: discountAmount,
                     tax,
+                    taxRate,
                     total,
                     notes: createOrderDto.notes,
                     createdBy,
@@ -279,9 +289,8 @@ export class OrdersService {
             const validTransitions: Record<string, string[]> = {
                 PENDING: ['CONFIRMED', 'PREPARING', 'CANCELLED'],
                 CONFIRMED: ['PREPARING', 'READY', 'CANCELLED'],
-                PREPARING: ['READY', 'SERVED', 'CANCELLED'],
-                READY: ['SERVED', 'COMPLETED', 'CANCELLED'],
-                SERVED: ['COMPLETED'],
+                PREPARING: ['READY', 'CANCELLED'],
+                READY: ['COMPLETED', 'CANCELLED'],
                 COMPLETED: [],
                 CANCELLED: [],
             };
@@ -399,6 +408,10 @@ export class OrdersService {
                     throw new BadRequestException('Produk tidak ditemukan.');
                 }
 
+                if (product.stock < item.quantity) {
+                    throw new BadRequestException(`Stok produk ${product.name} tidak mencukupi (Stok: ${product.stock}).`);
+                }
+
                 const itemSubtotal = Number(product.price) * item.quantity;
                 additionalSubtotal += itemSubtotal;
 
@@ -420,9 +433,11 @@ export class OrdersService {
             });
 
             // Recalculate totals
+            const taxSettings = await this.settingsService.getTaxSettings();
+            const taxRate = taxSettings.taxEnabled ? taxSettings.taxRate : 0;
+
             const newSubtotal = Number(order.subtotal) + additionalSubtotal;
-            const TAX_RATE = 0.10;
-            const newTax = (newSubtotal - Number(order.discount)) * TAX_RATE;
+            const newTax = (newSubtotal - Number(order.discount)) * (taxRate / 100);
             const newTotal = newSubtotal - Number(order.discount) + newTax;
 
             const updatedOrder = await prisma.order.update({
@@ -430,6 +445,7 @@ export class OrdersService {
                 data: {
                     subtotal: newSubtotal,
                     tax: newTax,
+                    taxRate: taxRate,
                     total: newTotal,
                     updatedBy: createdBy,
                 },

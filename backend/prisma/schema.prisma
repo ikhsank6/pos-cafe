@@ -1,6 +1,3 @@
-// This is your Prisma schema file for Cafe POS System
-// Learn more: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,102 +7,88 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ==================== AUTHENTICATION & AUTHORIZATION ====================
-
 model User {
-  id                   Int            @id @default(autoincrement())
-  uuid                 String         @unique @default(uuid())
-  username             String         @unique
-  email                String         @unique
-  password             String
-  fullName             String         @map("full_name")
-  phone                String?
-  avatar               String?
-  isActive             Boolean        @default(false) @map("is_active")
-  verifiedAt           DateTime?      @map("verified_at")
-  verificationToken    String?        @unique @map("verification_token")
-  resetPasswordToken   String?        @unique @map("reset_password_token")
-  resetPasswordExpires DateTime?      @map("reset_password_expires")
-  activeRoleId         Int?           @map("active_role_id")
-  
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-  createdBy String?   @map("created_by")
-  updatedBy String?   @map("updated_by")
-  deletedBy String?   @map("deleted_by")
+  id                     Int            @id @default(autoincrement())
+  uuid                   String         @unique @default(uuid())
+  email                  String         @unique
+  password               String
+  avatar                 String?
+  createdAt              DateTime       @default(now()) @map("created_at")
+  createdBy              String?        @map("created_by")
+  deletedAt              DateTime?      @map("deleted_at")
+  deletedBy              String?        @map("deleted_by")
+  fullName               String         @map("full_name")
+  isActive               Boolean        @default(false) @map("is_active")
+  phone                  String?
+  resetPasswordExpires   DateTime?      @map("reset_password_expires")
+  resetPasswordToken     String?        @unique @map("reset_password_token")
+  updatedAt              DateTime       @updatedAt @map("updated_at")
+  updatedBy              String?        @map("updated_by")
+  username               String         @unique
+  verificationToken      String?        @unique @map("verification_token")
+  verifiedAt             DateTime?      @map("verified_at")
+  activeRoleId           Int?           @map("active_role_id")
+  triggeredNotifications Notification[] @relation("NotificationFromUser")
+  refreshTokens          RefreshToken[]
+  userRoles              UserRole[]
+  activeRole             Role?          @relation("ActiveRole", fields: [activeRoleId], references: [id])
 
-  // Relations
-  activeRole            Role?          @relation("ActiveRole", fields: [activeRoleId], references: [id])
-  userRoles             UserRole[]
-  refreshTokens         RefreshToken[]
-  triggeredNotifications Notification[]      @relation("NotificationFromUser")
-  
   @@map("users")
 }
 
 model RefreshToken {
   id        Int       @id @default(autoincrement())
   token     String    @unique
-  userId    Int       @map("user_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  createdBy String?   @map("created_by")
+  deletedAt DateTime? @map("deleted_at")
+  deletedBy String?   @map("deleted_by")
   expiresAt DateTime  @map("expires_at")
   revokedAt DateTime? @map("revoked_at")
-  
-  createdAt DateTime  @default(now()) @map("created_at")
-  deletedAt DateTime? @map("deleted_at")
-  createdBy String?   @map("created_by")
   updatedBy String?   @map("updated_by")
-  deletedBy String?   @map("deleted_by")
+  userId    Int       @map("user_id")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
   @@index([userId])
   @@index([token])
   @@map("refresh_tokens")
 }
 
 model Role {
-  id          Int      @id @default(autoincrement())
-  uuid        String   @unique @default(uuid())
-  name        String   @unique
-  code        String   @unique // OWNER, MANAGER, CASHIER, KITCHEN, WAITER
-  description String?
-  isActive    Boolean  @default(true) @map("is_active")
-  
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-  createdBy String?   @map("created_by")
-  updatedBy String?   @map("updated_by")
-  deletedBy String?   @map("deleted_by")
+  id            Int            @id @default(autoincrement())
+  uuid          String         @unique @default(uuid())
+  name          String         @unique
+  description   String?
+  code          String         @unique
+  createdAt     DateTime       @default(now()) @map("created_at")
+  createdBy     String?        @map("created_by")
+  deletedAt     DateTime?      @map("deleted_at")
+  deletedBy     String?        @map("deleted_by")
+  isActive      Boolean        @default(true) @map("is_active")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  updatedBy     String?        @map("updated_by")
+  menuAccess    MenuAccess[]
+  notifications Notification[]
+  userRoles     UserRole[]
+  activeUsers   User[]         @relation("ActiveRole")
 
-  // Relations
-  activeUsers     User[] @relation("ActiveRole")
-  userRoles       UserRole[]
-  menuAccess      MenuAccess[]
-  notifications   Notification[]
-  
   @@map("roles")
 }
 
 model UserRole {
-  id     Int @id @default(autoincrement())
-  uuid   String @unique @default(uuid())
-  userId Int @map("user_id")
-  roleId Int @map("role_id")
-  
+  id        Int       @id @default(autoincrement())
+  uuid      String    @unique @default(uuid())
+  userId    Int       @map("user_id")
+  roleId    Int       @map("role_id")
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
   createdBy String?   @map("created_by")
   updatedBy String?   @map("updated_by")
   deletedBy String?   @map("deleted_by")
+  role      Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  
   @@unique([userId, roleId])
   @@index([userId])
   @@index([roleId])
@@ -113,47 +96,41 @@ model UserRole {
 }
 
 model Menu {
-  id       Int     @id @default(autoincrement())
-  uuid     String  @unique @default(uuid())
-  name     String
-  path     String?
-  icon     String?
-  parentId Int?    @map("parent_id")
-  order    Int     @default(0)
-  isActive Boolean @default(true) @map("is_active")
-  
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-  createdBy String?   @map("created_by")
-  updatedBy String?   @map("updated_by")
-  deletedBy String?   @map("deleted_by")
-
-  // Relations
+  id         Int          @id @default(autoincrement())
+  uuid       String       @unique @default(uuid())
+  name       String
+  path       String?
+  icon       String?
+  order      Int          @default(0)
+  createdAt  DateTime     @default(now()) @map("created_at")
+  createdBy  String?      @map("created_by")
+  deletedAt  DateTime?    @map("deleted_at")
+  deletedBy  String?      @map("deleted_by")
+  isActive   Boolean      @default(true) @map("is_active")
+  parentId   Int?         @map("parent_id")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+  updatedBy  String?      @map("updated_by")
+  menuAccess MenuAccess[]
   parent     Menu?        @relation("MenuHierarchy", fields: [parentId], references: [id])
   children   Menu[]       @relation("MenuHierarchy")
-  menuAccess MenuAccess[]
-  
+
   @@map("menus")
 }
 
 model MenuAccess {
-  id     Int @id @default(autoincrement())
-  uuid   String @unique @default(uuid())
-  roleId Int @map("role_id")
-  menuId Int @map("menu_id")
-  
+  id        Int       @id @default(autoincrement())
+  uuid      String    @unique @default(uuid())
   createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
   createdBy String?   @map("created_by")
-  updatedBy String?   @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
   deletedBy String?   @map("deleted_by")
+  menuId    Int       @map("menu_id")
+  roleId    Int       @map("role_id")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  updatedBy String?   @map("updated_by")
+  menu      Menu      @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  role      Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
-  // Relations
-  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  menu Menu @relation(fields: [menuId], references: [id], onDelete: Cascade)
-  
   @@unique([roleId, menuId])
   @@index([roleId])
   @@index([menuId])
@@ -163,122 +140,98 @@ model MenuAccess {
 model Notification {
   id          Int       @id @default(autoincrement())
   uuid        String    @unique @default(uuid())
-  toRoleId    Int       @map("to_role_id")    // Target role to receive notification
-  fromUserId  Int?      @map("from_user_id")  // User who triggered the notification (nullable for system notifications)
-  message     String                           // Notification message
-  detailUrl   String?   @map("detail_url")    // URL to navigate when clicked
-  referenceId String?   @map("reference_id")  // Reference ID (e.g., order UUID, product UUID)
-  type        String    @default("info")       // info, success, warning, error
+  message     String
+  type        String    @default("info")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  createdBy   String?   @map("created_by")
+  deletedAt   DateTime? @map("deleted_at")
+  deletedBy   String?   @map("deleted_by")
+  detailUrl   String?   @map("detail_url")
+  fromUserId  Int?      @map("from_user_id")
   isRead      Boolean   @default(false) @map("is_read")
   readAt      DateTime? @map("read_at")
-  
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-  createdBy String?   @map("created_by")
-  updatedBy String?   @map("updated_by")
-  deletedBy String?   @map("deleted_by")
+  referenceId String?   @map("reference_id")
+  toRoleId    Int       @map("to_role_id")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  updatedBy   String?   @map("updated_by")
+  fromUser    User?     @relation("NotificationFromUser", fields: [fromUserId], references: [id])
+  toRole      Role      @relation(fields: [toRoleId], references: [id])
 
-  // Relations
-  toRole   Role  @relation(fields: [toRoleId], references: [id])
-  fromUser User? @relation("NotificationFromUser", fields: [fromUserId], references: [id])
-  
   @@index([toRoleId])
   @@index([isRead])
   @@index([fromUserId])
   @@map("notifications")
 }
 
-// ==================== MEDIA ====================
-
 model Media {
-  id            Int       @id @default(autoincrement())
-  uuid          String    @unique @default(uuid())
-  filename      String
-  originalName  String    @map("original_name")
-  mimeType      String    @map("mime_type")
-  size          Int
-  path          String
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-  deletedAt     DateTime? @map("deleted_at")
-  createdBy     String?   @map("created_by")
-  updatedBy     String?   @map("updated_by")
-  deletedBy     String?   @map("deleted_by")
-  
-  // Relations
-  products      Product[]
+  id           Int       @id @default(autoincrement())
+  uuid         String    @unique @default(uuid())
+  filename     String
+  originalName String    @map("original_name")
+  mimeType     String    @map("mime_type")
+  size         Int
+  path         String
+  createdAt    DateTime  @default(now()) @map("created_at")
+  createdBy    String?   @map("created_by")
+  deletedAt    DateTime? @map("deleted_at")
+  deletedBy    String?   @map("deleted_by")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  updatedBy    String?   @map("updated_by")
+  products     Product[]
 
   @@map("media")
 }
 
-// ==================== PRODUCT MANAGEMENT ====================
-
 model Category {
-  id          Int     @id @default(autoincrement())
-  uuid        String  @unique @default(uuid())
-  name        String  @unique
+  id          Int       @id @default(autoincrement())
+  uuid        String    @unique @default(uuid())
+  name        String    @unique
   description String?
   icon        String?
-  isActive    Boolean @default(true) @map("is_active")
-  
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-  createdBy String?   @map("created_by")
-  updatedBy String?   @map("updated_by")
-  deletedBy String?   @map("deleted_by")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  createdBy   String?   @map("created_by")
+  updatedBy   String?   @map("updated_by")
+  deletedBy   String?   @map("deleted_by")
+  products    Product[]
 
-  // Relations
-  products Product[]
-  
   @@map("categories")
 }
 
 model Product {
-  id          Int         @id @default(autoincrement())
-  uuid        String      @unique @default(uuid())
-  sku         String      @unique
+  id          Int             @id @default(autoincrement())
+  uuid        String          @unique @default(uuid())
+  sku         String          @unique
   name        String
   description String?
-  categoryId  Int         @map("category_id")
-  price       Decimal     @db.Decimal(10, 2)
-  cost        Decimal?    @db.Decimal(10, 2)
-  stock       Int         @default(0)
-  minStock    Int         @default(0) @map("min_stock")
-  unit        String      @default("pcs")
+  categoryId  Int             @map("category_id")
+  price       Decimal         @db.Decimal(10, 2)
+  cost        Decimal?        @db.Decimal(10, 2)
+  stock       Int             @default(0)
+  minStock    Int             @default(0) @map("min_stock")
+  unit        String          @default("pcs")
   image       String?
-  mediaId     Int?        @map("media_id")
-  isActive    Boolean     @default(true) @map("is_active")
-  type        ProductType @default(FOOD)
-  
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-  createdBy String?   @map("created_by")
-  updatedBy String?   @map("updated_by")
-  deletedBy String?   @map("deleted_by")
+  mediaId     Int?            @map("media_id")
+  isActive    Boolean         @default(true) @map("is_active")
+  type        ProductType     @default(FOOD)
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+  deletedAt   DateTime?       @map("deleted_at")
+  createdBy   String?         @map("created_by")
+  updatedBy   String?         @map("updated_by")
+  deletedBy   String?         @map("deleted_by")
+  orderItems  OrderItem[]
+  category    Category        @relation(fields: [categoryId], references: [id])
+  media       Media?          @relation(fields: [mediaId], references: [id])
+  stockMoves  StockMovement[]
 
-  // Relations
-  category   Category        @relation(fields: [categoryId], references: [id])
-  media      Media?          @relation(fields: [mediaId], references: [id])
-  orderItems OrderItem[]
-  stockMoves StockMovement[]
-  
   @@index([categoryId])
   @@index([sku])
   @@index([mediaId])
   @@map("products")
 }
-
-enum ProductType {
-  FOOD
-  BEVERAGE
-  SNACK
-  OTHER
-}
-
-// ==================== STOCK MANAGEMENT ====================
 
 model StockMovement {
   id        Int          @id @default(autoincrement())
@@ -287,93 +240,66 @@ model StockMovement {
   type      MovementType
   quantity  Int
   notes     String?
-  reference String?      // Reference to supplier invoice, waste form, etc.
-  
-  createdAt DateTime  @default(now()) @map("created_at")
-  deletedAt DateTime? @map("deleted_at")
-  createdBy String?   @map("created_by")
-  updatedBy String?   @map("updated_by")
-  deletedBy String?   @map("deleted_by")
+  reference String?
+  createdAt DateTime     @default(now()) @map("created_at")
+  deletedAt DateTime?    @map("deleted_at")
+  createdBy String?      @map("created_by")
+  updatedBy String?      @map("updated_by")
+  deletedBy String?      @map("deleted_by")
+  product   Product      @relation(fields: [productId], references: [id])
 
-  // Relations
-  product Product @relation(fields: [productId], references: [id])
-  
   @@index([productId])
   @@index([createdAt])
   @@map("stock_movements")
 }
 
-enum MovementType {
-  IN          // Stock masuk (pembelian)
-  OUT         // Stock keluar (penjualan)
-  ADJUSTMENT  // Penyesuaian stock
-  WASTE       // Barang rusak/expired
-  RETURN      // Retur
-}
-
-// ==================== TABLE MANAGEMENT ====================
-
 model Table {
-  id       Int         @id @default(autoincrement())
-  uuid     String      @unique @default(uuid())
-  number   String      @unique
-  capacity Int
-  location String?     // Indoor, Outdoor, VIP
-  status   TableStatus @default(AVAILABLE)
-  
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-  createdBy String?   @map("created_by")
-  updatedBy String?   @map("updated_by")
-  deletedBy String?   @map("deleted_by")
+  id        Int         @id @default(autoincrement())
+  uuid      String      @unique @default(uuid())
+  number    String      @unique
+  capacity  Int
+  location  String?
+  status    TableStatus @default(AVAILABLE)
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+  deletedAt DateTime?   @map("deleted_at")
+  createdBy String?     @map("created_by")
+  updatedBy String?     @map("updated_by")
+  deletedBy String?     @map("deleted_by")
+  orders    Order[]
 
-  // Relations
-  orders Order[]
-  
   @@map("tables")
 }
 
-enum TableStatus {
-  AVAILABLE
-  OCCUPIED
-  RESERVED
-  MAINTENANCE
-}
-
-// ==================== ORDER MANAGEMENT ====================
-
 model Order {
-  id            Int         @id @default(autoincrement())
-  uuid          String      @unique @default(uuid())
-  orderNumber   String      @unique @map("order_number")
-  tableId       Int?        @map("table_id")
-  customerId    Int?        @map("customer_id")
-  customerName  String?     @map("customer_name")
-  customerPhone String?     @map("customer_phone")
-  type          OrderType   @default(DINE_IN)
-  status        OrderStatus @default(PENDING)
-  subtotal      Decimal     @default(0) @db.Decimal(10, 2)
-  tax           Decimal     @default(0) @db.Decimal(10, 2)
-  discount      Decimal     @default(0) @db.Decimal(10, 2)
-  discountId    Int?        @map("discount_id")
+  id            Int           @id @default(autoincrement())
+  uuid          String        @unique @default(uuid())
+  orderNumber   String        @unique @map("order_number")
+  tableId       Int?          @map("table_id")
+  customerId    Int?          @map("customer_id")
+  customerName  String?       @map("customer_name")
+  customerPhone String?       @map("customer_phone")
+  type          OrderType     @default(DINE_IN)
+  status        OrderStatus   @default(PENDING)
+  subtotal      Decimal       @default(0) @db.Decimal(10, 2)
+  tax           Decimal       @default(0) @db.Decimal(10, 2)
+  discount      Decimal       @default(0) @db.Decimal(10, 2)
+  discountId    Int?          @map("discount_id")
+  taxRate       Decimal     @default(0) @map("tax_rate") @db.Decimal(5, 2)
   total         Decimal     @default(0) @db.Decimal(10, 2)
   notes         String?
-  
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-  createdBy String?   @map("created_by")
-  updatedBy String?   @map("updated_by")
-  deletedBy String?   @map("deleted_by")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  deletedAt     DateTime?   @map("deleted_at")
+  createdBy     String?     @map("created_by")
+  updatedBy     String?     @map("updated_by")
+  deletedBy     String?     @map("deleted_by")
+  orderItems    OrderItem[]
+  customer      Customer?   @relation(fields: [customerId], references: [id])
+  discountCode  Discount?   @relation(fields: [discountId], references: [id])
+  table         Table?      @relation(fields: [tableId], references: [id])
+  transactions  Transaction[]
 
-  // Relations
-  table        Table?        @relation(fields: [tableId], references: [id])
-  customer     Customer?     @relation(fields: [customerId], references: [id])
-  discountCode Discount?     @relation(fields: [discountId], references: [id])
-  orderItems   OrderItem[]
-  transactions Transaction[]
-  
   @@index([orderNumber])
   @@index([status])
   @@index([createdAt])
@@ -382,20 +308,17 @@ model Order {
   @@map("orders")
 }
 
-enum OrderType {
-  DINE_IN
-  TAKE_AWAY
-  DELIVERY
-}
+model TaxSetting {
+  id        Int      @id @default(autoincrement())
+  uuid      String   @unique @default(uuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdBy String?  @map("created_by")
+  updatedBy String?  @map("updated_by")
 
-enum OrderStatus {
-  PENDING     // Pesanan baru
-  CONFIRMED   // Dikonfirmasi
-  PREPARING   // Sedang diproses dapur
-  READY       // Siap disajikan
-  SERVED      // Sudah disajikan
-  COMPLETED   // Selesai dan dibayar
-  CANCELLED   // Dibatalkan
+  @@map("tax_settings")
 }
 
 model OrderItem {
@@ -406,34 +329,21 @@ model OrderItem {
   quantity  Int
   price     Decimal         @db.Decimal(10, 2)
   subtotal  Decimal         @db.Decimal(10, 2)
-  notes     String?         // Special request (extra pedas, tanpa es, dll)
+  notes     String?
   status    OrderItemStatus @default(PENDING)
-  
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-  createdBy String?   @map("created_by")
-  updatedBy String?   @map("updated_by")
-  deletedBy String?   @map("deleted_by")
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime        @updatedAt @map("updated_at")
+  deletedAt DateTime?       @map("deleted_at")
+  createdBy String?         @map("created_by")
+  updatedBy String?         @map("updated_by")
+  deletedBy String?         @map("deleted_by")
+  order     Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product         @relation(fields: [productId], references: [id])
 
-  // Relations
-  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id])
-  
   @@index([orderId])
   @@index([productId])
   @@map("order_items")
 }
-
-enum OrderItemStatus {
-  PENDING
-  PREPARING
-  READY
-  SERVED
-  CANCELLED
-}
-
-// ==================== PAYMENT & TRANSACTION ====================
 
 model Transaction {
   id            Int               @id @default(autoincrement())
@@ -446,21 +356,112 @@ model Transaction {
   changeAmount  Decimal           @default(0) @map("change_amount") @db.Decimal(10, 2)
   status        TransactionStatus @default(PENDING)
   notes         String?
-  
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-  createdBy String?   @map("created_by")
-  updatedBy String?   @map("updated_by")
-  deletedBy String?   @map("deleted_by")
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+  deletedAt     DateTime?         @map("deleted_at")
+  createdBy     String?           @map("created_by")
+  updatedBy     String?           @map("updated_by")
+  deletedBy     String?           @map("deleted_by")
+  order         Order             @relation(fields: [orderId], references: [id])
 
-  // Relations
-  order   Order @relation(fields: [orderId], references: [id])
-  
   @@index([transactionNo])
   @@index([orderId])
   @@index([createdAt])
   @@map("transactions")
+}
+
+model Customer {
+  id            Int       @id @default(autoincrement())
+  uuid          String    @unique @default(uuid())
+  name          String
+  email         String?   @unique
+  phone         String    @unique
+  address       String?
+  dateOfBirth   DateTime? @map("date_of_birth")
+  loyaltyPoints Int       @default(0) @map("loyalty_points")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+  createdBy     String?   @map("created_by")
+  updatedBy     String?   @map("updated_by")
+  deletedBy     String?   @map("deleted_by")
+  orders        Order[]
+
+  @@index([phone])
+  @@index([email])
+  @@map("customers")
+}
+
+model Discount {
+  id          Int          @id @default(autoincrement())
+  uuid        String       @unique @default(uuid())
+  code        String       @unique
+  name        String
+  description String?
+  type        DiscountType
+  value       Decimal      @db.Decimal(10, 2)
+  minPurchase Decimal?     @map("min_purchase") @db.Decimal(10, 2)
+  maxDiscount Decimal?     @map("max_discount") @db.Decimal(10, 2)
+  startDate   DateTime     @map("start_date")
+  endDate     DateTime     @map("end_date")
+  isActive    Boolean      @default(true) @map("is_active")
+  usageLimit  Int?         @map("usage_limit")
+  usageCount  Int          @default(0) @map("usage_count")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  deletedAt   DateTime?    @map("deleted_at")
+  createdBy   String?      @map("created_by")
+  updatedBy   String?      @map("updated_by")
+  deletedBy   String?      @map("deleted_by")
+  orders      Order[]
+
+  @@index([code])
+  @@index([isActive])
+  @@map("discounts")
+}
+
+enum ProductType {
+  FOOD
+  BEVERAGE
+  SNACK
+  OTHER
+}
+
+enum MovementType {
+  IN
+  OUT
+  ADJUSTMENT
+  WASTE
+  RETURN
+}
+
+enum TableStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+  MAINTENANCE
+}
+
+enum OrderType {
+  DINE_IN
+  TAKE_AWAY
+  DELIVERY
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  COMPLETED
+  CANCELLED
+}
+
+enum OrderItemStatus {
+  PENDING
+  PREPARING
+  READY
+  CANCELLED
 }
 
 enum PaymentMethod {
@@ -477,66 +478,6 @@ enum TransactionStatus {
   COMPLETED
   FAILED
   REFUNDED
-}
-
-// ==================== CUSTOMER MANAGEMENT ====================
-
-model Customer {
-  id            Int       @id @default(autoincrement())
-  uuid          String    @unique @default(uuid())
-  name          String
-  email         String?   @unique
-  phone         String    @unique
-  address       String?
-  dateOfBirth   DateTime? @map("date_of_birth")
-  loyaltyPoints Int       @default(0) @map("loyalty_points")
-  
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-  createdBy String?   @map("created_by")
-  updatedBy String?   @map("updated_by")
-  deletedBy String?   @map("deleted_by")
-
-  // Relations
-  orders Order[]
-
-  @@index([phone])
-  @@index([email])
-  @@map("customers")
-}
-
-// ==================== DISCOUNT & PROMOTION ====================
-
-model Discount {
-  id          Int          @id @default(autoincrement())
-  uuid        String       @unique @default(uuid())
-  code        String       @unique
-  name        String
-  description String?
-  type        DiscountType
-  value       Decimal      @db.Decimal(10, 2) // Percentage or fixed amount
-  minPurchase Decimal?     @map("min_purchase") @db.Decimal(10, 2)
-  maxDiscount Decimal?     @map("max_discount") @db.Decimal(10, 2)
-  startDate   DateTime     @map("start_date")
-  endDate     DateTime     @map("end_date")
-  isActive    Boolean      @default(true) @map("is_active")
-  usageLimit  Int?         @map("usage_limit")
-  usageCount  Int          @default(0) @map("usage_count")
-  
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-  createdBy String?   @map("created_by")
-  updatedBy String?   @map("updated_by")
-  deletedBy String?   @map("deleted_by")
-
-  // Relations
-  orders Order[]
-
-  @@index([code])
-  @@index([isActive])
-  @@map("discounts")
 }
 
 enum DiscountType {

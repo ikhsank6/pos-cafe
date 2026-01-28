@@ -29,6 +29,7 @@ import { tableService, type Table } from '@/services/table.service';
 import { customerService, type Customer } from '@/services/customer.service';
 import { categoryService, type Category } from '@/services/category.service';
 import { discountService, type Discount } from '@/services/discount.service';
+import { settingsService, type TaxSettings } from '@/services/settings.service';
 import { formatCurrency, showSuccess, showError } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -85,6 +86,7 @@ export default function CreateOrder() {
   
   const [discountCode, setDiscountCode] = useState('');
   const [appliedDiscount, setAppliedDiscount] = useState<Discount | null>(null);
+  const [taxSettings, setTaxSettings] = useState<TaxSettings>({ taxEnabled: false, taxRate: 0 });
   const [discountLoading, setDiscountLoading] = useState(false);
   const [discountError, setDiscountError] = useState('');
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -109,16 +111,18 @@ export default function CreateOrder() {
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      const [resProducts, resCategories, resTables, resCustomers] = await Promise.all([
+      const [resProducts, resCategories, resTables, resCustomers, resTax] = await Promise.all([
         productService.getAll({ limit: 200 }),
         categoryService.getAll({ limit: 100 }),
         tableService.getAll({ limit: 100 }),
         customerService.getAll({ limit: 100 }),
+        settingsService.getTaxSettings(),
       ]);
       setProducts(resProducts?.data || []);
       setCategories(resCategories?.data || []);
       setTables(resTables?.data || []);
       setCustomers(resCustomers?.data || []);
+      setTaxSettings(resTax);
     } catch (error) {
       if (!axios.isCancel(error)) {
         console.error('Failed to load data', error);
@@ -134,9 +138,18 @@ export default function CreateOrder() {
   }, [loadData]);
 
   const handleAddProduct = (product: Product) => {
+    if (product.stock <= 0) {
+      showError(`Stok produk ${product.name} habis.`);
+      return;
+    }
+
     const existingIndex = fields.findIndex(f => f.productUuid === product.uuid);
     if (existingIndex > -1) {
       const currentQty = form.getValues(`items.${existingIndex}.quantity`);
+      if (currentQty >= product.stock) {
+        showError(`Stok produk ${product.name} tidak mencukupi.`);
+        return;
+      }
       form.setValue(`items.${existingIndex}.quantity`, currentQty + 1);
     } else {
       append({
@@ -158,6 +171,10 @@ export default function CreateOrder() {
       setDiscountError(`Min. belanja ${formatCurrency(appliedDiscount.minPurchase)}`);
     }
   }, [subtotal, appliedDiscount]);
+
+  const discountAmount = calculateDiscountAmount(subtotal, appliedDiscount);
+  const taxAmount = (subtotal - discountAmount) * ((taxSettings.taxEnabled ? taxSettings.taxRate : 0) / 100);
+  const totalAmount = subtotal - discountAmount + taxAmount;
 
   const handleApplyDiscount = async () => {
     if (!discountCode) return;
@@ -285,8 +302,9 @@ export default function CreateOrder() {
                   return (
                     <div 
                       key={product.uuid} 
-                      onClick={() => handleAddProduct(product)}
+                      onClick={() => product.stock > 0 && handleAddProduct(product)}
                       className={`group flex flex-col bg-white dark:bg-zinc-900 rounded-xl border transition-all cursor-pointer ${
+                        product.stock <= 0 ? 'opacity-60 grayscale cursor-not-allowed' : 
                         addedQty > 0 ? 'border-zinc-900 dark:border-white ring-1 ring-zinc-900 dark:ring-white' : 'border-zinc-100 dark:border-zinc-800 hover:border-zinc-300'
                       }`}
                     >
@@ -302,6 +320,11 @@ export default function CreateOrder() {
                             {product.name.charAt(0)}
                           </div>
                         )}
+                        {product.stock <= 0 && (
+                          <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] flex items-center justify-center">
+                            <span className="bg-rose-500 text-white text-[10px] font-black px-2 py-1 rounded uppercase tracking-wider">Stok Habis</span>
+                          </div>
+                        )}
                         {addedQty > 0 && (
                           <div className="absolute top-2 right-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-[10px] font-bold h-6 w-6 rounded-full flex items-center justify-center shadow-lg">
                             {addedQty}
@@ -312,7 +335,12 @@ export default function CreateOrder() {
                       <div className="p-3 flex flex-col flex-1 gap-2">
                         <div className="min-h-10">
                           <h3 className="font-bold text-sm leading-tight text-zinc-800 dark:text-zinc-200 line-clamp-2">{product.name}</h3>
-                          <p className="text-[10px] text-zinc-400 font-medium uppercase mt-0.5">{product.category?.name || 'Umum'}</p>
+                          <div className="flex justify-between items-center mt-0.5">
+                            <p className="text-[10px] text-zinc-400 font-medium uppercase">{product.category?.name || 'Umum'}</p>
+                            <p className={`text-[10px] font-bold ${product.stock <= 5 ? 'text-rose-500' : 'text-zinc-400'}`}>
+                              Stok: {product.stock}
+                            </p>
+                          </div>
                         </div>
 
                         <div className="mt-auto pt-2">
@@ -323,6 +351,10 @@ export default function CreateOrder() {
                               <QuantityControl
                                 value={addedQty}
                                 onChange={(val) => {
+                                  if (val > product.stock) {
+                                    showError(`Stok produk ${product.name} tidak mencukupi.`);
+                                    return;
+                                  }
                                   const idx = fields.findIndex(f => f.productUuid === product.uuid);
                                   form.setValue(`items.${idx}.quantity`, val);
                                 }}
@@ -369,6 +401,7 @@ export default function CreateOrder() {
                   />
                 ) : fields.map((field, index) => {
                   const currentQty = form.watch(`items.${index}.quantity`);
+                  const product = products.find(p => p.uuid === field.productUuid);
                   return (
                     <div key={field.id} className="pb-3 border-b border-zinc-100 dark:border-zinc-800 space-y-2 last:border-0">
                       <div className="flex justify-between items-start gap-3">
@@ -382,7 +415,13 @@ export default function CreateOrder() {
                         <QuantityControl
                           size="sm"
                           value={currentQty}
-                          onChange={(val) => form.setValue(`items.${index}.quantity`, val)}
+                          onChange={(val) => {
+                            if (product && val > product.stock) {
+                              showError(`Stok produk ${field.name} tidak mencukupi.`);
+                              return;
+                            }
+                            form.setValue(`items.${index}.quantity`, val);
+                          }}
                           onRemove={() => remove(index)}
                         />
                         <input 
@@ -507,8 +546,11 @@ export default function CreateOrder() {
 
               <OrderSummary
                 subtotal={subtotal}
-                discount={calculateDiscountAmount(subtotal, appliedDiscount)}
+                discount={discountAmount}
                 discountLabel={appliedDiscount ? `Diskon (${appliedDiscount.code})` : 'Diskon'}
+                tax={taxAmount}
+                taxLabel={taxSettings.taxEnabled ? `Pajak (${taxSettings.taxRate}%)` : 'Pajak'}
+                total={totalAmount}
               />
 
               <Button 
@@ -569,8 +611,11 @@ export default function CreateOrder() {
             <OrderSummary
               showTotal
               subtotal={subtotal}
-              discount={calculateDiscountAmount(subtotal, appliedDiscount)}
+              discount={discountAmount}
               discountLabel={`Diskon (${appliedDiscount?.code || ''})`}
+              tax={taxAmount}
+              taxLabel={`Pajak (${taxSettings.taxRate}%)`}
+              total={totalAmount}
             />
           </div>
 

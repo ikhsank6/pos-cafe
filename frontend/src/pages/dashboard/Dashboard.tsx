@@ -188,7 +188,6 @@ export default function Dashboard() {
                       'CONFIRMED': 'bg-blue-500',
                       'PREPARING': 'bg-orange-500',
                       'READY': 'bg-green-400',
-                      'SERVED': 'bg-teal-500',
                       'COMPLETED': 'bg-green-600',
                       'CANCELLED': 'bg-red-500',
                     } as Record<string, string>;

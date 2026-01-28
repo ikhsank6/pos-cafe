@@ -1,24 +1,19 @@
 import { PrismaClient } from '@prisma/client';
+
 const prisma = new PrismaClient();
 
-async function check() {
-    const users = await prisma.user.findMany({
-        where: { email: 'admin@example.com' },
-        include: {
-            userRoles: {
-                include: { role: true }
-            }
-        }
-    });
-
-    console.log('--- ADMIN USERS ---');
-    console.dir(users, { depth: null });
-
-    const roles = await prisma.role.findMany();
-    console.log('--- ALL ROLES ---');
-    console.dir(roles, { depth: null });
+async function main() {
+  try {
+    const tableExists = await prisma.$queryRaw`SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'tax_settings')`;
+    console.log('tax_settings table exists:', tableExists);
+    
+    const settings = await prisma.taxSetting.findMany();
+    console.log('Settings in DB:', settings);
+  } catch (error) {
+    console.error('Error checking DB:', error);
+  } finally {
+    await prisma.$disconnect();
+  }
 }
 
-check()
-    .catch(console.error)
-    .finally(() => prisma.$disconnect());
+main();

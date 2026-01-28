@@ -40,6 +40,7 @@ export class OrderResource {
     subtotal: number;
     discount: number;
     tax: number;
+    taxRate: number;
     total: number;
     notes: string | null;
     createdAt: string;
@@ -70,6 +71,7 @@ export class OrderResource {
         this.subtotal = Number(order.subtotal);
         this.discount = Number(order.discount);
         this.tax = Number(order.tax);
+        this.taxRate = Number(order.taxRate);
         this.total = Number(order.total);
         this.notes = order.notes || null;
         this.createdAt = order.createdAt?.toISOString?.() || order.createdAt;
@@ -110,6 +112,7 @@ export class OrderResource {
             subtotal: this.subtotal,
             discount: this.discount,
             tax: this.tax,
+            taxRate: this.taxRate,
             total: this.total,
             notes: this.notes,
             createdAt: this.createdAt,

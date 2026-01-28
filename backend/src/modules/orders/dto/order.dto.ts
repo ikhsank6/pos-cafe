@@ -13,7 +13,6 @@ export enum OrderStatus {
     CONFIRMED = 'CONFIRMED',
     PREPARING = 'PREPARING',
     READY = 'READY',
-    SERVED = 'SERVED',
     COMPLETED = 'COMPLETED',
     CANCELLED = 'CANCELLED',
 }
@@ -22,7 +21,6 @@ export enum OrderItemStatus {
     PENDING = 'PENDING',
     PREPARING = 'PREPARING',
     READY = 'READY',
-    SERVED = 'SERVED',
     CANCELLED = 'CANCELLED',
 }
 
@@ -81,14 +79,14 @@ export class CreateOrderDto {
 export class UpdateOrderStatusDto {
     @ApiProperty({ example: 'CONFIRMED', enum: OrderStatus })
     @IsNotEmpty({ message: 'status harus diisi.' })
-    @IsEnum(OrderStatus, { message: 'status harus salah satu dari: PENDING, CONFIRMED, PREPARING, READY, SERVED, COMPLETED, CANCELLED.' })
+    @IsEnum(OrderStatus, { message: 'status harus salah satu dari: PENDING, CONFIRMED, PREPARING, READY, COMPLETED, CANCELLED.' })
     status: OrderStatus;
 }
 
 export class UpdateOrderItemStatusDto {
     @ApiProperty({ example: 'PREPARING', enum: OrderItemStatus })
     @IsNotEmpty({ message: 'status harus diisi.' })
-    @IsEnum(OrderItemStatus, { message: 'status harus salah satu dari: PENDING, PREPARING, READY, SERVED, CANCELLED.' })
+    @IsEnum(OrderItemStatus, { message: 'status harus salah satu dari: PENDING, PREPARING, READY, CANCELLED.' })
     status: OrderItemStatus;
 }
 
